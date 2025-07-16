@@ -1,7 +1,22 @@
 {
   "expo": {
     "name": "University_Ranking",
-    "slug": "University_Ranking",
-    "version": "1.0.0"
+    "slug": "universityranking",
+    "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "ea36c4a1-4d08-4460-b6d3-855bcb0f4044"
+      }
+    },
+    "owner": "xiaruize",
+    "android": {
+      "package": "com.xiaruize.universityranking"
+    },
+    "ios": {
+      "bundleIdentifier": "com.xiaruize.universityranking",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
   }
 }

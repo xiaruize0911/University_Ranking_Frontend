@@ -1,65 +1,55 @@
-import React, { use, useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { searchUniversities, getRankingOptions } from '../lib/api';
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, FlatList, StyleSheet, Pressable, SafeAreaView } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { searchUniversities, getRankingOptions, getCountries, getCities } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
-import { Pressable } from 'react-native';
-
 
 export default function SearchScreen() {
     const navigation = useNavigation();
     const [query, setQuery] = useState('');
+
+    // --- State for DropDownPicker Components ---
+    const [countryOpen, setCountryOpen] = useState(false);
     const [country, setCountry] = useState(null);
+    const [countryItems, setCountryItems] = useState([]);
+
+    const [cityOpen, setCityOpen] = useState(false);
     const [city, setCity] = useState(null);
+    const [cityItems, setCityItems] = useState([]);
+
+    const [sortOpen, setSortOpen] = useState(false);
     const [sortCredit, setSortCredit] = useState(null);
+    const [rankingItems, setRankingItems] = useState([]);
+
+    // --- State for Data and Results ---
     const [results, setResults] = useState([]);
     const [allCountries, setAllCountries] = useState([]);
-    const [allCities, setAllCities] = useState([]);
     const [rankingOptions, setRankingOptions] = useState([]);
 
-    useEffect(() => {
-        fetchInitialOptions();
-    }, []);
+    // --- Data Fetching Logic ---
 
-    useEffect(() => {
-        fetchCitiesOptions();
-    }, [country]);
-
+    // Main data fetch, runs when any filter changes
     useEffect(() => {
         fetchData();
     }, [query, country, city, sortCredit]);
 
-    const fetchInitialOptions = async () => {
-        const data = await searchUniversities({ query, country, city, sort_credit: sortCredit });
-        const cleaned = data.map(u => ({
-            ...u,
-            country: u.country || 'N/A',
-            city: u.city || 'N/A'
-        }));
-        setResults(cleaned);
-        const countries = [...new Set(cleaned.map(u => u.country))].filter(u => u != 'N/A').sort();
-        const cities = [...new Set(cleaned.map(u => u.city))].filter(c => c != 'N/A').sort();
-        setAllCountries(countries);
-        setAllCities(cities);
+    // **REFACTORED:** This now directly fetches and sets `cityItems` when the country changes.
+    useEffect(() => {
+        const fetchCityItems = async () => {
+            const cityOptions = await getCities(country); // Fetch raw city strings
+            // console.log('Fetching city items...', country, cityOptions);
+            // Format the raw strings into {label, value} objects and set them for the picker
+            setCityItems((cityOptions || []).map(c => ({ label: c, value: c })));
 
-    }
+            // Reset the selected city
+            setCity(null);
+        };
 
-    const fetchCitiesOptions = async () => {
-        const data = await searchUniversities({
-            query, country, city: '', sort_credit: sortCredit
-        });
-        const cleaned = data.map(u => ({
-            ...u,
-            country: u.country || 'N/A',
-            city: u.city || 'N/A'
-        }));
-        const cities = [...new Set(cleaned.map(u => u.city))].filter(c => c != 'N/A').sort();
-        setAllCities(cities);
-    }
+        fetchCityItems();
+    }, [country]);
 
+
+    // General function to fetch university results based on all filters
     const fetchData = async () => {
         const data = await searchUniversities({ query, country, city, sort_credit: sortCredit });
         const cleaned = data.map(u => ({
@@ -70,14 +60,25 @@ export default function SearchScreen() {
         setResults(cleaned);
     };
 
+    // Fetch initial options for country and ranking pickers on component mount
     useEffect(() => {
         (async () => {
-            const options = await getRankingOptions();
-            setRankingOptions(options);
+            const rankOpts = await getRankingOptions();
+            setRankingOptions(rankOpts);
+
+            const countryOpts = await getCountries();
+            setAllCountries(countryOpts);
         })();
     }, []);
 
+    // --- Format data for the other DropDownPicker components ---
+    useEffect(() => {
+        setCountryItems(allCountries.map(c => ({ label: c, value: c })));
+    }, [allCountries]);
 
+    useEffect(() => {
+        setRankingItems(rankingOptions.map(opt => ({ label: opt, value: opt })));
+    }, [rankingOptions]);
 
     return (
         <SafeAreaView style={{ flex: 1 }} >
@@ -89,45 +90,62 @@ export default function SearchScreen() {
                     onChangeText={setQuery}
                 />
 
-                <View style={styles.pickerRow}>
-                    <Picker
+                <View style={[styles.pickerRow, { zIndex: 3000 }]}>
+                    <DropDownPicker
+                        open={countryOpen}
+                        value={country}
+                        items={countryItems}
+                        setOpen={setCountryOpen}
+                        setValue={setCountry}
+                        setItems={setCountryItems}
+                        placeholder="All Countries"
                         style={styles.picker}
-                        selectedValue={country}
-                        onValueChange={(value) => setCountry(value)}>
-                        <Picker.Item label="All Countries" value={''} />
-                        {allCountries.map(c => <Picker.Item key={c} label={c} value={c} />)}
-                    </Picker>
-
-                    <Picker
+                        containerStyle={styles.pickerContainer}
+                        listMode="SCROLLVIEW"
+                    />
+                    <DropDownPicker
+                        open={cityOpen}
+                        value={city}
+                        items={cityItems}
+                        setOpen={setCityOpen}
+                        setValue={setCity}
+                        setItems={setCityItems}
+                        placeholder="All Cities"
                         style={styles.picker}
-                        selectedValue={city}
-                        onValueChange={(value) => setCity(value)}>
-                        <Picker.Item label="All Cities" value={''} />
-                        {allCities.map(c => <Picker.Item key={c} label={c} value={c} />)}
-                    </Picker>
+                        containerStyle={styles.pickerContainer}
+                        listMode="SCROLLVIEW"
+                    />
                 </View>
 
-                <Picker
-                    style={styles.picker}
-                    selectedValue={sortCredit}
-                    onValueChange={(value) => setSortCredit(value)}>
-                    <Picker.Item label="Alphabet " value={''} />
-                    {rankingOptions.map(opt => (
-                        <Picker.Item key={opt} label={opt} value={opt} />
-                    ))}
-                </Picker>
+                <View style={{ zIndex: 2000 }}>
+                    <DropDownPicker
+                        open={sortOpen}
+                        value={sortCredit}
+                        items={rankingItems}
+                        setOpen={setSortOpen}
+                        setValue={setSortCredit}
+                        setItems={setRankingItems}
+                        placeholder="Alphabet Order"
+                        style={styles.picker}
+                        containerStyle={{ marginTop: 10 }}
+                        listMode="SCROLLVIEW"
+                    />
+                </View>
 
                 <FlatList
                     data={results}
+                    keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
                     renderItem={({ item }) => (
-                        <Pressable
-                            onPress={() => navigation.navigate('DetailPage', { props: item.normalized_name })}
-                        >
-                            <View style={styles.card}>
+                        <View style={styles.card}>
+                            <Pressable
+                                onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name })}
+                            >
                                 <Text style={styles.name}>{item.name}</Text>
                                 <Text style={styles.sub}>{item.city}, {item.country}</Text>
-                            </View>
-                        </Pressable>)}
+                            </Pressable>
+                        </View>
+                    )}
+                    ListHeaderComponent={<View />}
                 />
             </View>
         </SafeAreaView >
@@ -150,17 +168,22 @@ const styles = StyleSheet.create({
     pickerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 10
+    },
+    pickerContainer: {
+        flex: 1,
+        marginHorizontal: 2,
     },
     picker: {
-        flex: 1,
-        marginHorizontal: 5
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
     },
     card: {
         backgroundColor: '#f0f0f0',
         borderRadius: 8,
         padding: 12,
-        marginBottom: 10
+        marginBottom: 10,
+        marginTop: 10
     },
     name: {
         fontSize: 16,
