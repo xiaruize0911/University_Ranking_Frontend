@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "universityrankings",
+  "private_key_id": "7e6346a1cab36412fd0605ae9ebc3647ef94a7e1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQD2WzhvXvMInfZ2\nJSJB+xC8NC4ku0UwqocUHmmsTZy1eYrLWEDGdUEfhmO+M0YmjpJW4jxAvZaWdR1f\nXoF91EjHksZpCp5Nem/Id6Q0VCVSl0892D4TMO5FUji0yZNEAKbQvGYMMd/kWsCh\n186z9Oyglz4xB6qf8BbLFmyh5Y7zWKrW1LaRyV9tSBrg+ewVfxWjFELyYXwbINlW\n2dTAvhb15MCm/BZSUbaw1VyIhkEHsuUaciPkb6Yf7YZSxZYAEjGLPXEbbi/Lg/Dm\nmq4TNafqmJ8uvW9jvuY1lHVDGayVvD95Lsegg+Xd3ckzgiOSWftvpq38moc695Ro\n9eNaLSVhAgMBAAECggEAFkqGvr0OrJbueB5ADUxUZVMrYbN4PUEQ2+cslKSpK1qG\nDoQ7yDlP3TRhzhIBpPd9klMCNLFy8MZEFB8PBH2y4CwNu+90B3qupqr8tqdugRyj\n1Oq+IypoROl9rA4ZPyv37Cc/7JaOtbDogTxvvaTJzHYi8HjLHZGx3kp3JecJmkcc\nKubBPSlcV702OR3msao3rb0gGCC+YjJ2NoA7JtPtbY5ErfA/Cxd9RzsvyoHAghuQ\nS9gelq+7BGtuWa3TPEP/F09pKmVzL1KKSfuTEaVuYfAOLQwQLvcr3t2Iv/dSLEfT\nct+FEFI/rY/JuBnSD4VGP4oM/oO7vqgccAKDaDlnSQKBgQD+Lyf3Pfy75aa0nl4I\nI5dGIYhCmExsauhcOrfuoItg0bfN66k2yJp1wXdAvY0sAmqcqCs/5yKy6JJbWVHs\n9m4lcjRLpzy5tgLweZAkbrSFLr7ATzEi+G9d13Lzsku+MuxzXneyyTSUEMUbU8m4\nVD7YBSwzmzOQ1C+m2QiaXUFR0wKBgQD4Hb+8e1FHh5A4I93Gx9F6B9uzdGFHKi75\nOeaZEHAAltlcOyd84RHPG2GauhHnhnHhugIO88oSCIpG0ITNeDCjOU4ywjf0dA8M\nfbX2+8Xyq1dRkoWY32FefavBDC6gcAWZZGiDn3ok/6D0rZOLY8d791+aY3FmBem5\n7N/tb1+3ewKBgB+FO4CGeFPYq66UQPbjavvwZpRTjI6ZR01AntSBpicQeqmXgrlf\ncQAPSLmHh/0gI5ZfqFVZVU04WAXp8qXe/VO5cNC84WPqNT0a5gwOimZFoLP6Xg6H\nHlBVylR8FLZ2XCoGWfOazeFanwa/gjFQiSaCpbOUmHVqSqp3GYEC9XmvAoGAS5bU\nmRmAs6gLOe9DW5H4sZK/TjbAhCvHz8niBPPLC4LpiX3EE/mFsXEIFVlmpwCApWJD\nykZfY4sShWx1aRuaxb9poXEmFuVcyFNsImil775fhcx7ww0a3uyubMvHUL2QFyFN\n7fuh/K+cW66d6rNlTNEaYTC2lXxrrmcJ+Y4avQ0CgYEA2Co+fQRZUS2GSzyaTdZ/\nYPBlbWLMnJsCW8bX8hUkW/jZmFfn//bYFj2hBsEQeQBXKqA9bfuK0f0nc4tJqwgk\nkFsLYwoadyZjGZRKxtVfPEixqWztzyEUl+qSRtLLwLawkY1jUpfjkxEI3h0Axck6\njGCh9GgtUzlhAvoDjMb9FZ0=\n-----END PRIVATE KEY-----\n",
+  "client_email": "universityranking@universityrankings.iam.gserviceaccount.com",
+  "client_id": "108249077834864708718",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/universityranking%40universityrankings.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
