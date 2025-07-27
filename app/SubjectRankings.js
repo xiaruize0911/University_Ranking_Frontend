@@ -122,7 +122,7 @@ export default function SubjectRankingsPage() {
                                             style={[
                                                 styles.top_u_block,
                                                 direction === 'row'
-                                                    ? { minWidth: 80, minHeight: 70, maxWidth: 120, flex: 1 }
+                                                    ? { minWidth: '30%', minHeight: 70, maxWidth: 120, flex: 1 }
                                                     : { minHeight: 60, width: '100%', maxWidth: 300, alignSelf: 'center' }
                                             ]}
                                             key={uni.name || uniIdx}
