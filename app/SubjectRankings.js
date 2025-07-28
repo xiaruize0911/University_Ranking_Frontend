@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { getRankingOptions } from '../lib/api';
 import { FlatList, Dimensions } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 export default function SubjectRankingsPage() {
+    const navigation = useNavigation();
     const [rankingOptions, setRankingOptions] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ export default function SubjectRankingsPage() {
     // Extract unique sources for dropdown
     useEffect(() => {
         const sources = Array.from(new Set(rankingOptions.map(opt => opt.source)));
-        setSourceItems(sources.map(s => ({ label: s, value: s })));
+        setSourceItems([...sources.map(s => ({ label: s, value: s })), { label: 'All Sources', value: null }]);
     }, [rankingOptions]);
 
     useEffect(() => {
@@ -97,6 +99,7 @@ export default function SubjectRankingsPage() {
                 </View>
                 <View style={styles.filterBlock}>
                     <TextInput
+                        open={subjectOpen}
                         style={styles.input_block}
                         backgroundColor="#ffffff"
                         placeholder="Subject/Region"
@@ -112,31 +115,40 @@ export default function SubjectRankingsPage() {
                 data={filteredRankings}
                 keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
                 renderItem={({ item }) => (
-                    <View style={[styles.card,]}>
-                        <View style={{ flex: 1, justifyContent: 'center' }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: 20, color: 'black', marginBottom: 6 }}>{item.source} - {item.subject}</Text>
-                            {item.top_universities && item.top_universities.length > 0 && (
-                                <View style={[styles.topUContainer, { flexDirection: direction }]}>
-                                    {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
-                                        <View
-                                            style={[
-                                                styles.top_u_block,
-                                                direction === 'row'
-                                                    ? { minWidth: '30%', minHeight: 70, maxWidth: 120, flex: 1 }
-                                                    : { minHeight: 60, width: '100%', maxWidth: 300, alignSelf: 'center' }
-                                            ]}
-                                            key={uni.name || uniIdx}
-                                        >
-                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#666' }}>#{uniIdx + 1}</Text>
-                                            <View style={{ alignItems: 'center' }}>
-                                                <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#222', textAlign: 'center' }}> {uni.name}</Text>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('RankingDetailPage', {
+                            table: item.table,
+                            source: item.source,
+                            subject: item.subject
+                        })}
+                        activeOpacity={0.8}
+                    >
+                        <View style={[styles.card,]}>
+                            <View style={{ flex: 1, justifyContent: 'center' }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, color: 'black', marginBottom: 6 }}>{item.source} - {item.subject}</Text>
+                                {item.top_universities && item.top_universities.length > 0 && (
+                                    <View style={[styles.topUContainer, { flexDirection: direction }]}>
+                                        {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
+                                            <View
+                                                style={[
+                                                    styles.top_u_block,
+                                                    direction === 'row'
+                                                        ? { minWidth: '30%', minHeight: 60, maxWidth: 120, flex: 1 }
+                                                        : { minHeight: 60, width: '100%', maxWidth: 300, alignSelf: 'center' }
+                                                ]}
+                                                key={uni.name || uniIdx}
+                                            >
+                                                <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#666' }}>#{uniIdx + 1}</Text>
+                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#222', textAlign: 'center' }}> {uni.name ? uni.name : uni.normalized_name}</Text>
+                                                </View>
                                             </View>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )}
                 ListHeaderComponent={<View />}
             />
@@ -171,15 +183,16 @@ const styles = StyleSheet.create({
     filterRow: {
         flexDirection: 'row',
         marginBottom: 16,
-        gap: 10
+        gap: 10,
+        zIndex: 100,
     },
     filterBlock: {
         flex: 1,
-        zIndex: 1000,
         backgroundColor: '#ffffffff',
         borderRadius: 8,
         padding: 6,
-        marginHorizontal: 2
+        marginHorizontal: 2,
+        zIndex: 100,
     },
     input_block: {
         flex: 1,

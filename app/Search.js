@@ -3,6 +3,7 @@ import { View, Text, TextInput, FlatList, StyleSheet, Pressable, SafeAreaView } 
 import DropDownPicker from 'react-native-dropdown-picker';
 import { searchUniversities, getRankingOptions, getCountries, getCities } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity } from 'react-native';
 
 export default function SearchScreen() {
     const navigation = useNavigation();
@@ -124,7 +125,7 @@ export default function SearchScreen() {
                     data={results}
                     keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
                     renderItem={({ item, index }) => (
-                        <Pressable
+                        <TouchableOpacity
                             onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name, name: item.name })}
                         >
                             <View style={styles.card}>
@@ -136,7 +137,7 @@ export default function SearchScreen() {
                                     <Text style={{ fontSize: 14, color: '#555' }}>{item.city}, {item.country}</Text>
                                 </View>
                             </View>
-                        </Pressable>
+                        </TouchableOpacity>
                     )}
                     ListHeaderComponent={<View />}
                 />

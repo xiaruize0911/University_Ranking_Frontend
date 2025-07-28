@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
+import RankingDetailPage from './RankingDetailPage';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,6 +34,20 @@ function SubjectRankings() {
 			<Stack.Screen
 				name="SubjectRankingsPage"
 				component={SubjectRankingsPage}
+			/>
+			<Stack.Screen
+				name="RankingDetailPage"
+				component={RankingDetailPage}
+				options={({ route }) => ({
+					title: route.params.name || route.params.normalized_name || 'University Details',
+				})}
+			/>
+			<Stack.Screen
+				name="DetailPage"
+				component={UniversityDetail}
+				options={({ route }) => ({
+					title: route.params.name || 'University Details',
+				})}
 			/>
 		</Stack.Navigator>
 	)
