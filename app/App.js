@@ -6,6 +6,7 @@ import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
 import RankingDetailPage from './RankingDetailPage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -56,16 +57,45 @@ function SubjectRankings() {
 export default function App() {
 	return (
 		<NavigationContainer>
-			<Tab.Navigator>
+			<Tab.Navigator
+				screenOptions={{
+					tabBarActiveTintColor: '#4a90e2',
+					tabBarInactiveTintColor: '#6c757d',
+					tabBarStyle: {
+						backgroundColor: '#ffffff',
+						borderTopColor: '#e1e5e9',
+						borderTopWidth: 1,
+						paddingBottom: 5,
+						height: 85,
+					},
+					tabBarLabelStyle: {
+						fontSize: 12,
+						fontWeight: '600',
+					},
+
+				}}
+			>
 				<Tab.Screen
 					name="Home"
 					component={HomeScreen}
-					options={{ headerShown: false }}
+					options={{
+						headerShown: false,
+						tabBarLabel: 'College Rankings',
+						tabBarIcon: ({ color, size }) => (
+							<Ionicons name="home-outline" size={size} color={color} />
+						),
+					}}
 				/>
 				<Tab.Screen
 					name="Subject Rankings"
 					component={SubjectRankings}
-					options={{ headerShown: false }}
+					options={{
+						headerShown: false,
+						tabBarLabel: 'Subject Rankings',
+						tabBarIcon: ({ color, size }) => (
+							<Ionicons name="list-outline" size={size} color={color} />
+						),
+					}}
 				/>
 			</Tab.Navigator>
 		</NavigationContainer>

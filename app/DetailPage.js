@@ -35,7 +35,8 @@ export default function GetUniversityDetail(props) {
     if (loading) {
         return (
             <View style={styles.center}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color="#4a90e2" />
+                <Text style={styles.loadingText}>Loading university details...</Text>
             </View>
         );
     }
@@ -43,40 +44,41 @@ export default function GetUniversityDetail(props) {
     if (!university) {
         return (
             <View style={styles.center}>
-                <Text>No details found.</Text>
+                <Text style={styles.errorText}>No details found.</Text>
             </View>
         );
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+            <ScrollView style={styles.scrollContainer}>
                 <View style={styles.headerRow}>
                     <Image
                         source={{ uri: university.photo }}
                         style={styles.headerImageInline}
                         resizeMode="contain"
                     />
-                    <View>
+                    <View style={styles.headerTextContainer}>
                         <Text style={styles.headerInline}>{university.name}</Text>
                         <Text style={styles.headerLocationInline}>{university.city + ', \n' + university.country}</Text>
                     </View>
                 </View>
                 {/*Blurb block*/}
                 {university.blurb ? (
-                    <View style={{ padding: 16, backgroundColor: '#f9f9f9', marginHorizontal: 20, marginBottom: 10, borderRadius: 8 }}>
-                        <Text style={{ fontSize: 18, color: '#333' }}>{university.blurb}</Text>
+                    <View style={styles.blurbContainer}>
+                        <Text style={styles.sectionTitle}>About</Text>
+                        <Text style={styles.blurbText}>{university.blurb}</Text>
                     </View>
                 ) : null}
                 { /* Stats block */}
                 {university.stats && university.stats.length > 0 && (
-                    <View style={{ backgroundColor: '#f9f9f9', marginHorizontal: 20, marginBottom: 10, borderRadius: 8, padding: 10 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>Statistics</Text>
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionTitle}>Statistics</Text>
                         <View style={styles.statsGrid}>
                             {university.stats.map((item, idx) => (
                                 <View style={styles.statsBlock} key={item.key || idx}>
-                                    <Text style={{ fontSize: 16, textAlign: 'center' }}>{item.type}</Text>
-                                    <Text style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}>{item.count || 'N/A'}</Text>
+                                    <Text style={styles.statsType}>{item.type}</Text>
+                                    <Text style={styles.statsCount}>{item.count || 'N/A'}</Text>
                                 </View>
                             ))}
                         </View>
@@ -84,15 +86,15 @@ export default function GetUniversityDetail(props) {
                 )}
                 {/* Rankings block */}
                 {university.rankings && university.rankings.length > 0 && (
-                    <View style={{ backgroundColor: '#f9f9f9', marginHorizontal: 20, marginBottom: 10, borderRadius: 8, padding: 10 }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>Rankings</Text>
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionTitle}>Rankings</Text>
                         <View style={styles.rankingsGrid}>
                             {university.rankings.map((ranking, idx) => (
                                 <View style={styles.rankingsBlock} key={idx}>
-                                    <Text style={{ fontSize: 16, marginBottom: 4, textAlign: 'center' }}>
+                                    <Text style={styles.rankingSource}>
                                         {ranking.source} {ranking.subject}
                                     </Text>
-                                    <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 4 }}>
+                                    <Text style={styles.rankingValue}>
                                         #{ranking.rank_value}
                                     </Text>
                                 </View>
@@ -100,8 +102,7 @@ export default function GetUniversityDetail(props) {
                         </View>
                     </View>
                 )}
-                <View>
-                </View>
+                <View style={{ height: 20 }} />
             </ScrollView>
         </SafeAreaView>
     );
@@ -113,78 +114,152 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingBottom: 100
     },
+    scrollContainer: {
+        flex: 1,
+    },
     center: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: '#f8f9fa'
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#6c757d',
+    },
+    errorText: {
+        fontSize: 18,
+        color: '#dc3545',
+        textAlign: 'center',
     },
     headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 200,
-        paddingBottom: 10,
-        marginHorizontal: 10,
-        backgroundColor: '#f0f0f0'
+        backgroundColor: '#ffffff',
+        borderRadius: 16,
+        padding: 20,
+        margin: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4
     },
     headerImageInline: {
-        width: 150,
-        height: '100%',
-        borderRadius: 8,
-        backgroundColor: '#eaeaea',
+        width: 120,
+        height: 120,
+        borderRadius: 12,
+        backgroundColor: '#f1f3f4',
         marginRight: 16
     },
+    headerTextContainer: {
+        flex: 1,
+    },
     headerInline: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        flexShrink: 1,
-        flexWrap: 'wrap',
-        color: '#222',
-        maxWidth: 180,
+        color: '#2c3e50',
+        marginBottom: 8,
+        lineHeight: 28,
     },
     headerLocationInline: {
-        fontSize: 18,
-        flexShrink: 1,
-        flexWrap: 'wrap',
-        color: '#222'
+        fontSize: 16,
+        color: '#6c757d',
+        lineHeight: 20,
+    },
+    sectionContainer: {
+        backgroundColor: '#ffffff',
+        marginHorizontal: 16,
+        marginBottom: 16,
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3
+    },
+    blurbContainer: {
+        backgroundColor: '#ffffff',
+        marginHorizontal: 16,
+        marginBottom: 16,
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3
+    },
+    sectionTitle: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        marginBottom: 16,
+        color: '#2c3e50'
+    },
+    blurbText: {
+        fontSize: 16,
+        color: '#495057',
+        lineHeight: 24,
     },
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        paddingBottom: 10,
-        paddingHorizontal: 10,
-        marginBottom: 10,
-        gap: 0
+        gap: 12
     },
     statsBlock: {
         minWidth: 120,
         flexBasis: '45%',
         flexGrow: 1,
         alignItems: 'center',
-        fontSize: 18,
-        margin: 5,
-        padding: 10,
-        backgroundColor: '#c5e472ff',
-        borderRadius: 8
+        backgroundColor: '#e8f5e8',
+        borderRadius: 12,
+        padding: 16,
+        borderLeftWidth: 4,
+        borderLeftColor: '#28a745'
+    },
+    statsType: {
+        fontSize: 14,
+        textAlign: 'center',
+        color: '#6c757d',
+        marginBottom: 8,
+    },
+    statsCount: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        textAlign: 'center',
+        color: '#28a745'
     },
     rankingsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        paddingBottom: 10,
-        paddingHorizontal: 10,
-        marginBottom: 10,
-        gap: 0
+        gap: 12
     },
     rankingsBlock: {
         minWidth: 120,
         flexBasis: '45%',
         flexGrow: 1,
         alignItems: 'center',
-        fontSize: 18,
-        margin: 5,
-        padding: 10,
-        backgroundColor: '#72e0e4ff',
-        borderRadius: 8
+        backgroundColor: '#e3f2fd',
+        borderRadius: 12,
+        padding: 16,
+        borderLeftWidth: 4,
+        borderLeftColor: '#4a90e2'
+    },
+    rankingSource: {
+        fontSize: 14,
+        marginBottom: 8,
+        textAlign: 'center',
+        color: '#6c757d',
+        lineHeight: 18,
+    },
+    rankingValue: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        color: '#4a90e2',
+        textAlign: 'center'
     }
 });

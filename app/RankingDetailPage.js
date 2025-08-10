@@ -25,7 +25,8 @@ export default function RankingDetailPage({ route }) {
     if (loading) {
         return (
             <View style={styles.center}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color="#4a90e2" />
+                <Text style={styles.loadingText}>Loading ranking details...</Text>
             </View>
         );
     }
@@ -36,17 +37,25 @@ export default function RankingDetailPage({ route }) {
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
-
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name, name: item.name })}
+                        activeOpacity={0.8}
                     >
                         <View style={styles.card}>
-                            <Text style={styles.rank}>#{item.rank_value}</Text>
-                            <Text style={styles.name}>{item.name || item.normalized_name}</Text>
+                            <View style={styles.rankContainer}>
+                                <Text style={styles.rank}>#{item.rank_value}</Text>
+                            </View>
+                            <View style={styles.infoContainer}>
+                                <Text style={styles.name}>{item.name || item.normalized_name}</Text>
+                                {item.country && (
+                                    <Text style={styles.country}>{item.country}</Text>
+                                )}
+                            </View>
                         </View>
                     </TouchableOpacity>
                 )}
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -56,42 +65,69 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#fff'
+        backgroundColor: '#f8f9fa'
     },
     center: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: '#f8f9fa'
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#6c757d',
     },
     title: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center'
+        marginBottom: 24,
+        textAlign: 'center',
+        color: '#2c3e50',
+        lineHeight: 30,
     },
     card: {
-        backgroundColor: '#e6f7ff',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 10,
-        marginTop: 10
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3
+    },
+    rankContainer: {
+        backgroundColor: '#4a90e2',
+        borderRadius: 12,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        marginRight: 16,
+        minWidth: 50,
+        alignItems: 'center',
     },
     rank: {
         fontWeight: 'bold',
         fontSize: 18,
-        color: '#0077b6',
-        marginBottom: 4
+        color: '#ffffff'
+    },
+    infoContainer: {
+        flex: 1,
+        justifyContent: 'center',
     },
     name: {
-        fontWeight: 'bold',
+        fontWeight: '600',
         fontSize: 16,
-        color: '#222',
-        marginBottom: 2
+        color: '#2c3e50',
+        marginBottom: 4,
+        lineHeight: 20,
     },
     country: {
         fontSize: 14,
-        color: '#555',
-        marginBottom: 2
+        color: '#6c757d',
+        lineHeight: 18,
     },
     blurb: {
         fontSize: 13,

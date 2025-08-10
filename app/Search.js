@@ -130,11 +130,11 @@ export default function SearchScreen() {
                         >
                             <View style={styles.card}>
                                 <View style={{ marginRight: 10, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}> #{index + 1}</Text>
+                                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#4a90e2' }}> #{index + 1}</Text>
                                 </View>
                                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.name}</Text>
-                                    <Text style={{ fontSize: 14, color: '#555' }}>{item.city}, {item.country}</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#2c3e50' }}>{item.name}</Text>
+                                    <Text style={{ fontSize: 14, color: '#6c757d' }}>{item.city}, {item.country}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -150,14 +150,15 @@ const styles = StyleSheet.create({
     container: {
         padding: 16,
         flex: 1,
-        backgroundColor: 'white'
+        backgroundColor: '#f8f9fa'
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#e1e5e9',
         borderRadius: 8,
         padding: 10,
-        marginBottom: 10
+        marginBottom: 10,
+        backgroundColor: '#ffffff'
     },
     pickerRow: {
         flexDirection: 'row',
@@ -168,16 +169,22 @@ const styles = StyleSheet.create({
         marginHorizontal: 2,
     },
     picker: {
-        borderColor: '#ccc',
+        borderColor: '#e1e5e9',
         borderWidth: 1,
         borderRadius: 8,
+        backgroundColor: '#ffffff'
     },
     card: {
         flexDirection: 'row',
-        backgroundColor: '#d2d2d2ff',
-        borderRadius: 8,
-        padding: 12,
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 10,
-        marginTop: 10
+        marginTop: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2
     }
 });
