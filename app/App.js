@@ -6,14 +6,28 @@ import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
 import RankingDetailPage from './RankingDetailPage';
+import UniversitySourceRankingsPage from './UniversitySourceRankingsPage'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function HomeScreen() {
+	const { theme } = useTheme();
+
 	return (
-		<Stack.Navigator>
+		<Stack.Navigator
+			screenOptions={{
+				headerStyle: {
+					backgroundColor: theme.surface,
+				},
+				headerTintColor: theme.text,
+				headerTitleStyle: {
+					color: theme.text,
+				},
+			}}
+		>
 			<Stack.Screen
 				name="College Rankings"
 				component={SearchScreen}
@@ -25,15 +39,34 @@ function HomeScreen() {
 					title: route.params.name || 'University Details',
 				})}
 			/>
+			<Stack.Screen
+				name="UniversitySourceRankingsPage"
+				component={UniversitySourceRankingsPage}
+				options={({ route }) => ({
+					title: route.params.universityName + ' ' + route.params.source + ' Rankings' || 'University Source Rankings',
+				})}
+			/>
 		</Stack.Navigator>
 	)
 }
 
 function SubjectRankings() {
+	const { theme } = useTheme();
+
 	return (
-		<Stack.Navigator>
+		<Stack.Navigator
+			screenOptions={{
+				headerStyle: {
+					backgroundColor: theme.surface,
+				},
+				headerTintColor: theme.text,
+				headerTitleStyle: {
+					color: theme.text,
+				},
+			}}
+		>
 			<Stack.Screen
-				name="SubjectRankingsPage"
+				name="Rankings of Subjects&Regions"
 				component={SubjectRankingsPage}
 			/>
 			<Stack.Screen
@@ -54,16 +87,18 @@ function SubjectRankings() {
 	)
 }
 
-export default function App() {
+function AppContent() {
+	const { theme } = useTheme();
+
 	return (
 		<NavigationContainer>
 			<Tab.Navigator
 				screenOptions={{
-					tabBarActiveTintColor: '#4a90e2',
-					tabBarInactiveTintColor: '#6c757d',
+					tabBarActiveTintColor: theme.primary,
+					tabBarInactiveTintColor: theme.textSecondary,
 					tabBarStyle: {
-						backgroundColor: '#ffffff',
-						borderTopColor: '#e1e5e9',
+						backgroundColor: theme.surface,
+						borderTopColor: theme.border,
 						borderTopWidth: 1,
 						paddingBottom: 5,
 						height: 85,
@@ -72,7 +107,13 @@ export default function App() {
 						fontSize: 12,
 						fontWeight: '600',
 					},
-
+					headerStyle: {
+						backgroundColor: theme.surface,
+					},
+					headerTintColor: theme.text,
+					headerTitleStyle: {
+						color: theme.text,
+					},
 				}}
 			>
 				<Tab.Screen
@@ -99,5 +140,13 @@ export default function App() {
 				/>
 			</Tab.Navigator>
 		</NavigationContainer>
+	);
+}
+
+export default function App() {
+	return (
+		<ThemeProvider>
+			<AppContent />
+		</ThemeProvider>
 	);
 }

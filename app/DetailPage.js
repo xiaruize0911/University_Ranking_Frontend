@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { API_BASE_URL } from '../constants/config';
 import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 export default function GetUniversityDetail(props) {
     // console.log("props: ", props);
@@ -12,6 +13,7 @@ export default function GetUniversityDetail(props) {
     // console.log("normalized_name: ", normalized_name);
     const [university, setUniversity] = useState(null);
     const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
 
     console.log("Fetching details for university: ", university);
 
@@ -87,19 +89,46 @@ export default function GetUniversityDetail(props) {
                 {/* Rankings block */}
                 {university.rankings && university.rankings.length > 0 && (
                     <View style={styles.sectionContainer}>
-                        <Text style={styles.sectionTitle}>Rankings</Text>
-                        <View style={styles.rankingsGrid}>
-                            {university.rankings.map((ranking, idx) => (
-                                <View style={styles.rankingsBlock} key={idx}>
-                                    <Text style={styles.rankingSource}>
-                                        {ranking.source} {ranking.subject}
-                                    </Text>
-                                    <Text style={styles.rankingValue}>
-                                        #{ranking.rank_value}
-                                    </Text>
-                                </View>
-                            ))}
-                        </View>
+                        <Text style={styles.sectionTitle}>Subject Rankings by Source</Text>
+                        <FlatList
+                            data={(() => {
+                                // Group rankings by source
+                                const groupedRankings = {};
+                                university.rankings.forEach(ranking => {
+                                    if (!groupedRankings[ranking.source]) {
+                                        groupedRankings[ranking.source] = [];
+                                    }
+                                    groupedRankings[ranking.source].push(ranking);
+                                });
+                                // Convert to array with source names and count
+                                return Object.keys(groupedRankings).map(source => ({
+                                    source,
+                                    count: groupedRankings[source].length,
+                                    rankings: groupedRankings[source]
+                                }));
+                            })()}
+                            keyExtractor={(item) => item.source}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.sourceRankingBlock}
+                                    onPress={() => navigation.navigate('UniversitySourceRankingsPage', {
+                                        normalizedName: university.normalized_name,
+                                        universityName: university.name,
+                                        source: item.source
+                                    })}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={styles.sourceRankingContent}>
+                                        <Text style={styles.sourceText}>{item.source}</Text>
+                                        <Text style={styles.rankingCountText}>
+                                            {item.count} ranking{item.count !== 1 ? 's' : ''}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.arrowText}>→</Text>
+                                </TouchableOpacity>
+                            )}
+                            scrollEnabled={false}
+                        />
                     </View>
                 )}
                 <View style={{ height: 20 }} />
@@ -261,5 +290,34 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#4a90e2',
         textAlign: 'center'
+    },
+    sourceRankingBlock: {
+        backgroundColor: '#e3f2fd',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#4a90e2',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    sourceRankingContent: {
+        flex: 1
+    },
+    sourceText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 4
+    },
+    rankingCountText: {
+        fontSize: 14,
+        color: '#6c757d'
+    },
+    arrowText: {
+        fontSize: 20,
+        color: '#4a90e2',
+        fontWeight: 'bold'
     }
 });
