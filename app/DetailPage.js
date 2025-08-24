@@ -148,17 +148,16 @@ export default function GetUniversityDetail(props) {
                         </Card>
                     )}
                     <View style={{ height: 20 }} />
-
-                    {/* Floating Theme Toggle Button */}
-                    <TouchableOpacity
-                        style={[styles.floatingThemeButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                        onPress={toggleTheme}
-                    >
-                        <Text style={[styles.themeButtonText, { color: theme.text }]}>
-                            {isDarkMode ? '☀️' : '🌙'}
-                        </Text>
-                    </TouchableOpacity>
                 </ScrollView>
+                {/* Floating Theme Toggle Button */}
+                <TouchableOpacity
+                    style={[styles.floatingThemeButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                    onPress={toggleTheme}
+                >
+                    <Text style={[styles.themeButtonText, { color: theme.text }]}>
+                        {isDarkMode ? '☀️' : '🌙'}
+                    </Text>
+                </TouchableOpacity>
             </SafeAreaView>
         </GestureHandlerRootView>
     );
