@@ -1,21 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getRankingOptions } from '../lib/api';
 import { FlatList, Dimensions } from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
+import Input from '../components/Input';
+import Button from '../components/Button';
+import { Card, CardContent, CardTitle } from '../components/Card';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SubjectRankingsPage() {
     const navigation = useNavigation();
+    const { theme, isDarkMode, toggleTheme } = useTheme();
     const [rankingOptions, setRankingOptions] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Dropdown state
-    const [sourceOpen, setSourceOpen] = useState(false);
+    // Source selection state
     const [selectedSource, setSelectedSource] = useState(null);
     const [sourceItems, setSourceItems] = useState([]);
     const [subjectInput, setSubjectInput] = useState('');
-    const [subjectOpen, setSubjectOpen] = useState(false);
+
+    // Bottom sheet for source selection only
+    const sourceBottomSheetRef = useRef(null);
+    const snapPoints = useMemo(() => ['25%', '50%'], []);
 
     useEffect(() => {
         async function fetchOptions() {
@@ -27,29 +35,22 @@ export default function SubjectRankingsPage() {
         fetchOptions();
     }, []);
 
-    // Extract unique sources for dropdown
+    // Extract unique sources for selection
     useEffect(() => {
         const sources = Array.from(new Set(rankingOptions.map(opt => opt.source)));
-        setSourceItems([...sources.map(s => ({ label: s, value: s })), { label: 'All Sources', value: null }]);
+        setSourceItems([{ label: 'All Sources', value: null }, ...sources.map(s => ({ label: s, value: s }))]);
     }, [rankingOptions]);
-
-    useEffect(() => {
-        if (subjectOpen) {
-            setSourceOpen(false);
-        }
-    }, [subjectOpen])
-
-    useEffect(() => {
-        if (sourceOpen) {
-            setSubjectOpen(false);
-        }
-    }, [sourceOpen]);
 
     // Filtered rankings to display
     const filteredRankings = rankingOptions.filter(opt =>
         (!selectedSource || opt.source === selectedSource) &&
         (!subjectInput || (opt.subject && opt.subject.toLowerCase().includes(subjectInput.toLowerCase())))
     );
+
+    // Source selection handler
+    const handleSourcePress = useCallback(() => {
+        sourceBottomSheetRef.current?.present();
+    }, []);
 
     const [direction, setDirection] = useState('row');
     const windowDimensions = Dimensions.get('window');
@@ -75,59 +76,57 @@ export default function SubjectRankingsPage() {
 
     if (loading) {
         return (
-            <View style={styles.center}>
-                <ActivityIndicator size="large" color="#4a90e2" />
-                <Text style={styles.loadingText}>Loading rankings...</Text>
-            </View>
+            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+                <ActivityIndicator size="large" color={theme.primary} />
+                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading rankings...</Text>
+            </GestureHandlerRootView>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Rankings By Subject and Source</Text>
+        <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
+            <Text style={[styles.title, { color: theme.text }]}>Rankings By Subject and Source</Text>
+
             <View style={styles.filterRow}>
-                <View style={styles.filterBlock}>
-                    <DropDownPicker
-                        open={sourceOpen}
-                        value={selectedSource}
-                        items={sourceItems}
-                        setOpen={setSourceOpen}
-                        setValue={setSelectedSource}
-                        setItems={setSourceItems}
-                        placeholder="Select Source"
-                        listMode="SCROLLVIEW"
-                        style={styles.dropdown}
-                        textStyle={styles.dropdownText}
-                        placeholderStyle={styles.placeholderStyle}
+                <View style={[styles.filterBlock]}>
+                    <Button
+                        title={selectedSource || "Select Source"}
+                        onPress={handleSourcePress}
+                        variant="outline"
+                        textStyle={{ color: theme.text }}
+                        style={{ backgroundColor: theme.surface, borderColor: theme.border }}
                     />
                 </View>
                 <View style={styles.filterBlock}>
-                    <TextInput
-                        style={styles.input_block}
+                    <Input
                         placeholder="Subject/Region"
-                        placeholderTextColor="#6c757d"
                         value={subjectInput}
                         onChangeText={setSubjectInput}
-                        editable={true}
+                        style={{ backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }}
                     />
                 </View>
             </View>
+
             <FlatList
                 style={{ marginTop: 10 }}
                 data={filteredRankings}
                 keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
                 renderItem={({ item }) => (
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('RankingDetailPage', {
-                            table: item.table,
-                            source: item.source,
-                            subject: item.subject
-                        })}
+                        onPress={() => {
+                            navigation.navigate('RankingDetailPage', {
+                                table: item.table,
+                                source: item.source,
+                                subject: item.subject
+                            });
+                        }}
                         activeOpacity={0.8}
                     >
-                        <View style={styles.card}>
-                            <View style={{ flex: 1, justifyContent: 'center' }}>
-                                <Text style={styles.cardTitle}>{item.source} - {item.subject}</Text>
+                        <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                            <CardContent>
+                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                    {item.source} - {item.subject}
+                                </CardTitle>
                                 {item.top_universities && item.top_universities.length > 0 && (
                                     <View style={[styles.topUContainer, { flexDirection: direction }]}>
                                         {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
@@ -139,6 +138,10 @@ export default function SubjectRankingsPage() {
                                                 <View
                                                     style={[
                                                         styles.top_u_block,
+                                                        {
+                                                            backgroundColor: theme.surfaceSecondary,
+                                                            borderLeftColor: theme.primary,
+                                                        },
                                                         direction === 'row'
                                                             ? {
                                                                 width: (dimensions.window.width - 80) / 3,
@@ -153,10 +156,11 @@ export default function SubjectRankingsPage() {
                                                             }
                                                     ]}
                                                 >
-                                                    <Text style={styles.rankNumber}>#{uniIdx + 1}</Text>
+                                                    <Text style={[styles.rankNumber, { color: theme.primary }]}>#{uniIdx + 1}</Text>
                                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
                                                         <Text style={[
                                                             styles.universityName,
+                                                            { color: theme.text },
                                                             direction === 'row'
                                                                 ? { fontSize: 12, lineHeight: 14 }
                                                                 : { fontSize: 14, lineHeight: 18 }
@@ -167,13 +171,56 @@ export default function SubjectRankingsPage() {
                                         ))}
                                     </View>
                                 )}
-                            </View>
-                        </View>
+                            </CardContent>
+                        </Card>
                     </TouchableOpacity>
                 )}
                 ListHeaderComponent={<View />}
             />
-        </View >
+
+            {/* Source Selection Bottom Sheet Modal */}
+            <BottomSheetModal
+                ref={sourceBottomSheetRef}
+                index={0}
+                snapPoints={snapPoints}
+                enablePanDownToClose={true}
+                backgroundStyle={{ backgroundColor: theme.surface }}
+                handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+            >
+                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Source</Text>
+                    {sourceItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={item.value || `key-${index}`}
+                            style={[styles.sheetItem, { borderBottomColor: theme.border }]}
+                            onPress={() => {
+                                setSelectedSource(item.value);
+                                sourceBottomSheetRef.current?.dismiss();
+                            }}
+                        >
+                            <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </BottomSheetScrollView>
+            </BottomSheetModal>
+
+            {/* Floating Theme Toggle Button */}
+            <TouchableOpacity
+                style={[
+                    styles.floatingThemeButton,
+                    {
+                        backgroundColor: theme.surface,
+                        borderColor: theme.border
+                    }
+                ]}
+                onPress={toggleTheme}
+                activeOpacity={0.8}
+            >
+                <Text style={[styles.themeButtonText, { color: theme.text }]}>
+                    {isDarkMode ? '☀️' : '🌙'}
+                </Text>
+            </TouchableOpacity>
+        </GestureHandlerRootView>
     );
 }
 
@@ -181,41 +228,28 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f8f9fa'
     },
     center: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f8f9fa'
     },
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#6c757d',
     },
     title: {
         fontSize: 26,
         fontWeight: 'bold',
         marginBottom: 24,
         textAlign: 'center',
-        color: '#2c3e50'
     },
     card: {
-        backgroundColor: '#ffffff',
-        borderRadius: 16,
-        padding: 20,
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        elevation: 3
     },
     cardTitle: {
         fontWeight: 'bold',
         fontSize: 18,
-        color: '#2c3e50',
         marginBottom: 12,
         lineHeight: 24,
     },
@@ -223,37 +257,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginBottom: 20,
         gap: 12,
-        zIndex: 100,
     },
     filterBlock: {
         flex: 1,
-        backgroundColor: '#ffffff',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#e1e5e9',
-        zIndex: 100,
-    },
-    dropdown: {
-        borderColor: 'transparent',
-        borderWidth: 0,
-        backgroundColor: 'transparent',
-    },
-    dropdownText: {
-        fontSize: 16,
-        color: '#2c3e50',
-    },
-    placeholderStyle: {
-        color: '#6c757d',
-        fontSize: 16,
-    },
-    input_block: {
-        flex: 1,
-        backgroundColor: '#ffffff',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#2c3e50',
-        borderWidth: 0,
     },
     topUContainer: {
         justifyContent: 'space-between',
@@ -264,26 +270,59 @@ const styles = StyleSheet.create({
         width: '100%'
     },
     top_u_block: {
-        backgroundColor: '#e3f2fd',
         alignItems: 'center',
         textAlign: 'center',
         alignContent: 'center',
         borderRadius: 12,
         padding: 12,
         borderLeftWidth: 3,
-        borderLeftColor: '#4a90e2'
     },
     rankNumber: {
         fontWeight: 'bold',
         fontSize: 14,
-        color: '#4a90e2',
         marginBottom: 4,
     },
     universityName: {
         fontWeight: '600',
         fontSize: 14,
-        color: '#2c3e50',
         textAlign: 'center',
         lineHeight: 18,
-    }
+    },
+    floatingThemeButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 4,
+        zIndex: 1000,
+    },
+    themeButtonText: {
+        fontSize: 24,
+    },
+    sheetContainer: {
+        flex: 1,
+        padding: 16,
+    },
+    sheetTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    sheetItem: {
+        padding: 16,
+        borderBottomWidth: 1,
+    },
+    sheetItemText: {
+        fontSize: 16,
+    },
 });

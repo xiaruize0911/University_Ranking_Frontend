@@ -2,6 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
@@ -91,55 +93,59 @@ function AppContent() {
 	const { theme } = useTheme();
 
 	return (
-		<NavigationContainer>
-			<Tab.Navigator
-				screenOptions={{
-					tabBarActiveTintColor: theme.primary,
-					tabBarInactiveTintColor: theme.textSecondary,
-					tabBarStyle: {
-						backgroundColor: theme.surface,
-						borderTopColor: theme.border,
-						borderTopWidth: 1,
-						paddingBottom: 5,
-						height: 85,
-					},
-					tabBarLabelStyle: {
-						fontSize: 12,
-						fontWeight: '600',
-					},
-					headerStyle: {
-						backgroundColor: theme.surface,
-					},
-					headerTintColor: theme.text,
-					headerTitleStyle: {
-						color: theme.text,
-					},
-				}}
-			>
-				<Tab.Screen
-					name="Home"
-					component={HomeScreen}
-					options={{
-						headerShown: false,
-						tabBarLabel: 'College Rankings',
-						tabBarIcon: ({ color, size }) => (
-							<Ionicons name="home-outline" size={size} color={color} />
-						),
-					}}
-				/>
-				<Tab.Screen
-					name="Subject Rankings"
-					component={SubjectRankings}
-					options={{
-						headerShown: false,
-						tabBarLabel: 'Subject Rankings',
-						tabBarIcon: ({ color, size }) => (
-							<Ionicons name="list-outline" size={size} color={color} />
-						),
-					}}
-				/>
-			</Tab.Navigator>
-		</NavigationContainer>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<BottomSheetModalProvider>
+				<NavigationContainer>
+					<Tab.Navigator
+						screenOptions={{
+							tabBarActiveTintColor: theme.primary,
+							tabBarInactiveTintColor: theme.textSecondary,
+							tabBarStyle: {
+								backgroundColor: theme.surface,
+								borderTopColor: theme.border,
+								borderTopWidth: 1,
+								paddingBottom: 5,
+								height: 85,
+							},
+							tabBarLabelStyle: {
+								fontSize: 12,
+								fontWeight: '600',
+							},
+							headerStyle: {
+								backgroundColor: theme.surface,
+							},
+							headerTintColor: theme.text,
+							headerTitleStyle: {
+								color: theme.text,
+							},
+						}}
+					>
+						<Tab.Screen
+							name="Home"
+							component={HomeScreen}
+							options={{
+								headerShown: false,
+								tabBarLabel: 'College Rankings',
+								tabBarIcon: ({ color, size }) => (
+									<Ionicons name="home-outline" size={size} color={color} />
+								),
+							}}
+						/>
+						<Tab.Screen
+							name="Subject Rankings"
+							component={SubjectRankings}
+							options={{
+								headerShown: false,
+								tabBarLabel: 'Subject Rankings',
+								tabBarIcon: ({ color, size }) => (
+									<Ionicons name="list-outline" size={size} color={color} />
+								),
+							}}
+						/>
+					</Tab.Navigator>
+				</NavigationContainer>
+			</BottomSheetModalProvider>
+		</GestureHandlerRootView>
 	);
 }
 

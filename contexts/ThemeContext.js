@@ -14,6 +14,7 @@ export const useTheme = () => {
 export const lightTheme = {
     background: '#f8f9fa',
     surface: '#ffffff',
+    surfaceSecondary: '#f1f3f5',
     primary: '#4a90e2',
     text: '#2c3e50',
     textSecondary: '#6c757d',
@@ -26,6 +27,7 @@ export const lightTheme = {
 export const darkTheme = {
     background: '#121212',
     surface: '#1e1e1e',
+    surfaceSecondary: '#434343ff',
     primary: '#4a90e2',
     text: '#ffffff',
     textSecondary: '#b0b0b0',

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { searchUniversities, getCountries } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -19,7 +19,7 @@ export default function SearchScreen() {
 
     const countrySheetRef = useRef(null);
     const rankingSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['25%', '50%'], []);
+    const snapPoints = useMemo(() => ['25%', '50%', '70%'], []);
 
     // --- Data Fetching Logic ---
     useEffect(() => {
@@ -65,13 +65,13 @@ export default function SearchScreen() {
 
     const handleCountryPress = useCallback(() => {
         setCountrySearchQuery(''); // Reset search when opening
-        rankingSheetRef.current?.close(); // Close ranking sheet if open
-        countrySheetRef.current?.expand();
+        rankingSheetRef.current?.dismiss(); // Close ranking sheet if open
+        countrySheetRef.current?.present();
     }, []);
 
     const handleRankingPress = useCallback(() => {
-        countrySheetRef.current?.close(); // Close country sheet if open
-        rankingSheetRef.current?.expand();
+        countrySheetRef.current?.dismiss(); // Close country sheet if open
+        rankingSheetRef.current?.present();
     }, []);
 
     // Find the label for the current sortCredit value
@@ -136,13 +136,14 @@ export default function SearchScreen() {
                     />
                 </View>
 
-                <BottomSheet
+                <BottomSheetModal
                     ref={countrySheetRef}
-                    index={-1}
+                    index={0}
                     snapPoints={snapPoints}
                     enablePanDownToClose={true}
                     backgroundStyle={{ backgroundColor: theme.surface }}
                     handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+                    topInset={50}
                 >
                     <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
                         <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Country</Text>
@@ -160,18 +161,18 @@ export default function SearchScreen() {
                                 onPress={() => {
                                     setCountry(item.value);
                                     setCountrySearchQuery('');
-                                    countrySheetRef.current?.close();
+                                    countrySheetRef.current?.dismiss();
                                 }}
                             >
                                 <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </BottomSheetScrollView>
-                </BottomSheet>
+                </BottomSheetModal>
 
-                <BottomSheet
+                <BottomSheetModal
                     ref={rankingSheetRef}
-                    index={-1}
+                    index={0}
                     snapPoints={snapPoints}
                     enablePanDownToClose={true}
                     backgroundStyle={{ backgroundColor: theme.surface }}
@@ -185,14 +186,14 @@ export default function SearchScreen() {
                                 style={[styles.sheetItem, { borderBottomColor: theme.border }]}
                                 onPress={() => {
                                     setSortCredit(item.value);
-                                    rankingSheetRef.current?.close();
+                                    rankingSheetRef.current?.dismiss();
                                 }}
                             >
                                 <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
                             </TouchableOpacity>
                         ))}
                     </BottomSheetScrollView>
-                </BottomSheet>
+                </BottomSheetModal>
 
                 {/* Floating Theme Toggle Button */}
                 <TouchableOpacity
