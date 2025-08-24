@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
 
 export default function RankingDetailPage({ route }) {
     // Expect route.params: { table, source, subject }
@@ -36,7 +37,7 @@ export default function RankingDetailPage({ route }) {
 
     return (
         <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <Text style={[styles.title, { color: theme.text }]}>{source} - {subject} Rankings</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{formatSourceName(source)} - {formatSubjectName(subject)} Rankings</Text>
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}

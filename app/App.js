@@ -8,7 +8,8 @@ import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
 import RankingDetailPage from './RankingDetailPage';
-import UniversitySourceRankingsPage from './UniversitySourceRankingsPage'
+import UniversitySourceRankingsPage from './UniversitySourceRankingsPage';
+import { formatSourceName } from '../utils/textFormatter';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 
@@ -45,7 +46,7 @@ function HomeScreen() {
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName + ' ' + route.params.source + ' Rankings' || 'University Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
 				})}
 			/>
 		</Stack.Navigator>

@@ -9,6 +9,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { Card, CardContent, CardTitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
+import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
 
 export default function SubjectRankingsPage() {
     const navigation = useNavigation();
@@ -38,7 +39,7 @@ export default function SubjectRankingsPage() {
     // Extract unique sources for selection
     useEffect(() => {
         const sources = Array.from(new Set(rankingOptions.map(opt => opt.source)));
-        setSourceItems([{ label: 'All Sources', value: null }, ...sources.map(s => ({ label: s, value: s }))]);
+        setSourceItems([{ label: 'All Sources', value: null }, ...sources.map(s => ({ label: formatSourceName(s), value: s }))]);
     }, [rankingOptions]);
 
     // Filtered rankings to display
@@ -90,7 +91,7 @@ export default function SubjectRankingsPage() {
             <View style={styles.filterRow}>
                 <View style={[styles.filterBlock]}>
                     <Button
-                        title={selectedSource || "Select Source"}
+                        title={selectedSource ? formatSourceName(selectedSource) : "Select Source"}
                         onPress={handleSourcePress}
                         variant="outline"
                         textStyle={{ color: theme.text }}
@@ -125,7 +126,7 @@ export default function SubjectRankingsPage() {
                         <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                             <CardContent>
                                 <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                    {item.source} - {item.subject}
+                                    {formatSourceName(item.source)} - {formatSubjectName(item.subject)}
                                 </CardTitle>
                                 {item.top_universities && item.top_universities.length > 0 && (
                                     <View style={[styles.topUContainer, { flexDirection: direction }]}>

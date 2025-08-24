@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
+import { formatSourceName, formatStatsType } from '../utils/textFormatter';
 
 export default function GetUniversityDetail(props) {
     // console.log("props: ", props);
@@ -90,7 +91,7 @@ export default function GetUniversityDetail(props) {
                                 <View style={styles.statsGrid}>
                                     {university.stats.map((item, idx) => (
                                         <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
-                                            <Text style={[styles.statsType, { color: theme.textSecondary }]}>{item.type}</Text>
+                                            <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
                                             <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || 'N/A'}</Text>
                                         </View>
                                     ))}
@@ -133,7 +134,7 @@ export default function GetUniversityDetail(props) {
                                             activeOpacity={0.8}
                                         >
                                             <View style={styles.sourceRankingContent}>
-                                                <Text style={[styles.sourceText, { color: theme.text }]}>{item.source}</Text>
+                                                <Text style={[styles.sourceText, { color: theme.text }]}>{formatSourceName(item.source)}</Text>
                                                 <Text style={[styles.rankingCountText, { color: theme.textSecondary }]}>
                                                     {item.count} ranking{item.count !== 1 ? 's' : ''}
                                                 </Text>
