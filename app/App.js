@@ -9,6 +9,7 @@ import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
 import RankingDetailPage from './RankingDetailPage';
 import UniversitySourceRankingsPage from './UniversitySourceRankingsPage';
+import MeScreen from './MeScreen';
 import { formatSourceName } from '../utils/textFormatter';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
@@ -86,6 +87,50 @@ function SubjectRankings() {
 					title: route.params.name || 'University Details',
 				})}
 			/>
+			<Stack.Screen
+				name="UniversitySourceRankingsPage"
+				component={UniversitySourceRankingsPage}
+				options={({ route }) => ({
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
+				})}
+			/>
+		</Stack.Navigator>
+	)
+}
+
+function MeScreenStack() {
+	const { theme } = useTheme();
+
+	return (
+		<Stack.Navigator
+			screenOptions={{
+				headerStyle: {
+					backgroundColor: theme.surface,
+				},
+				headerTintColor: theme.text,
+				headerTitleStyle: {
+					color: theme.text,
+				},
+			}}
+		>
+			<Stack.Screen
+				name="Me"
+				component={MeScreen}
+			/>
+			<Stack.Screen
+				name="DetailPage"
+				component={UniversityDetail}
+				options={({ route }) => ({
+					title: route.params.name || 'University Details',
+				})}
+			/>
+			<Stack.Screen
+				name="UniversitySourceRankingsPage"
+				component={UniversitySourceRankingsPage}
+				options={({ route }) => ({
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
+				})}
+			/>
 		</Stack.Navigator>
 	)
 }
@@ -140,6 +185,17 @@ function AppContent() {
 								tabBarLabel: 'Subject Rankings',
 								tabBarIcon: ({ color, size }) => (
 									<Ionicons name="list-outline" size={size} color={color} />
+								),
+							}}
+						/>
+						<Tab.Screen
+							name="Me"
+							component={MeScreenStack}
+							options={{
+								headerShown: false,
+								tabBarLabel: 'Me',
+								tabBarIcon: ({ color, size }) => (
+									<Ionicons name="person-outline" size={size} color={color} />
 								),
 							}}
 						/>

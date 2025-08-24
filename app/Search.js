@@ -194,16 +194,6 @@ export default function SearchScreen() {
                         ))}
                     </BottomSheetScrollView>
                 </BottomSheetModal>
-
-                {/* Floating Theme Toggle Button */}
-                <TouchableOpacity
-                    style={[styles.floatingThemeButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                    onPress={toggleTheme}
-                >
-                    <Text style={[styles.themeButtonText, { color: theme.text }]}>
-                        {isDarkMode ? '☀️' : '🌙'}
-                    </Text>
-                </TouchableOpacity>
             </SafeAreaView>
         </GestureHandlerRootView>
     );

@@ -67,23 +67,6 @@ export default function RankingDetailPage({ route }) {
                 )}
                 showsVerticalScrollIndicator={false}
             />
-
-            {/* Floating Theme Toggle Button */}
-            <TouchableOpacity
-                style={[
-                    styles.floatingThemeButton,
-                    {
-                        backgroundColor: theme.surface,
-                        borderColor: theme.border
-                    }
-                ]}
-                onPress={toggleTheme}
-                activeOpacity={0.8}
-            >
-                <Text style={[styles.themeButtonText, { color: theme.text }]}>
-                    {isDarkMode ? '☀️' : '🌙'}
-                </Text>
-            </TouchableOpacity>
         </GestureHandlerRootView>
     );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../constants/config';
 import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { formatSourceName, formatStatsType } from '../utils/textFormatter';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function GetUniversityDetail(props) {
     // console.log("props: ", props);
@@ -16,6 +18,8 @@ export default function GetUniversityDetail(props) {
     // console.log("normalized_name: ", normalized_name);
     const [university, setUniversity] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
     const navigation = useNavigation();
 
     console.log("Fetching details for normalized_name: ", normalized_name);
@@ -27,6 +31,7 @@ export default function GetUniversityDetail(props) {
                 .then(data => {
                     setUniversity(data);
                     setLoading(false);
+                    checkIfFavorite(data);
                 })
                 .catch(err => {
                     console.error('Error fetching details:', err);
@@ -36,6 +41,62 @@ export default function GetUniversityDetail(props) {
             setLoading(false);
         }
     }, [normalized_name]); // Add normalized_name as a dependency
+
+    // Check if current university is in favorites
+    const checkIfFavorite = async (universityData) => {
+        try {
+            const stored = await AsyncStorage.getItem('favoriteUniversities');
+            if (stored) {
+                const favorites = JSON.parse(stored);
+                const isCurrentFavorite = favorites.some(fav =>
+                    fav.normalized_name === universityData.normalized_name ||
+                    fav.id === universityData.id
+                );
+                setIsFavorite(isCurrentFavorite);
+            }
+        } catch (error) {
+            console.error('Error checking favorites:', error);
+        }
+    };
+
+    // Toggle favorite status
+    const toggleFavorite = async () => {
+        if (!university) return;
+
+        setFavoriteLoading(true);
+        try {
+            const stored = await AsyncStorage.getItem('favoriteUniversities');
+            let favorites = stored ? JSON.parse(stored) : [];
+
+            const favoriteData = {
+                id: university.id || university.normalized_name,
+                normalized_name: university.normalized_name,
+                name: university.name,
+                country: university.country,
+                city: university.city,
+                photo: university.photo
+            };
+
+            if (isFavorite) {
+                // Remove from favorites
+                favorites = favorites.filter(fav =>
+                    fav.normalized_name !== university.normalized_name &&
+                    fav.id !== university.id
+                );
+                setIsFavorite(false);
+            } else {
+                // Add to favorites
+                favorites.push(favoriteData);
+                setIsFavorite(true);
+            }
+
+            await AsyncStorage.setItem('favoriteUniversities', JSON.stringify(favorites));
+        } catch (error) {
+            console.error('Error updating favorites:', error);
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -71,6 +132,22 @@ export default function GetUniversityDetail(props) {
                                     {university.city + ', \n' + university.country}
                                 </CardSubtitle>
                             </CardContent>
+                            <TouchableOpacity
+                                style={[styles.favoriteButton, { backgroundColor: theme.surfaceSecondary }]}
+                                onPress={toggleFavorite}
+                                disabled={favoriteLoading}
+                                activeOpacity={0.7}
+                            >
+                                {favoriteLoading ? (
+                                    <ActivityIndicator size="small" color={theme.primary} />
+                                ) : (
+                                    <Ionicons
+                                        name={isFavorite ? "heart" : "heart-outline"}
+                                        size={28}
+                                        color={isFavorite ? "#ff4757" : theme.primary}
+                                    />
+                                )}
+                            </TouchableOpacity>
                         </View>
                     </Card>
 
@@ -149,15 +226,6 @@ export default function GetUniversityDetail(props) {
                     )}
                     <View style={{ height: 20 }} />
                 </ScrollView>
-                {/* Floating Theme Toggle Button */}
-                <TouchableOpacity
-                    style={[styles.floatingThemeButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                    onPress={toggleTheme}
-                >
-                    <Text style={[styles.themeButtonText, { color: theme.text }]}>
-                        {isDarkMode ? '☀️' : '🌙'}
-                    </Text>
-                </TouchableOpacity>
             </SafeAreaView>
         </GestureHandlerRootView>
     );
@@ -201,6 +269,19 @@ const styles = StyleSheet.create({
     },
     headerTextContainer: {
         flex: 1,
+    },
+    favoriteButton: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     sectionCard: {
         marginHorizontal: 16,
