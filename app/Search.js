@@ -11,7 +11,7 @@ export default function SearchScreen() {
     const { theme, isDarkMode, toggleTheme } = useTheme();
     const [query, setQuery] = useState('');
     const [country, setCountry] = useState(null);
-    const [sortCredit, setSortCredit] = useState(null);
+    const [sortCredit, setSortCredit] = useState('US_News_best global universities_Rankings');
     const [countrySearchQuery, setCountrySearchQuery] = useState('');
     const [results, setResults] = useState([]);
     const [allCountries, setAllCountries] = useState([]);
@@ -45,7 +45,6 @@ export default function SearchScreen() {
 
             const countryOpts = await getCountries();
             setAllCountries(countryOpts);
-            setSortCredit('US_News_best global universities_Rankings')
         })();
     }, []);
 
