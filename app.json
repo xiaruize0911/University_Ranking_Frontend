@@ -9,9 +9,6 @@
       }
     },
     "owner": "xiaruize",
-    "android": {
-      "package": "com.xiaruize.universityranking"
-    },
     "ios": {
       "bundleIdentifier": "com.xiaruize.universityranking",
       "infoPlist": {
