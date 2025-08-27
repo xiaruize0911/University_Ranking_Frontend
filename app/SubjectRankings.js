@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getRankingOptions } from '../lib/api';
 import { FlatList, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -9,13 +8,13 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { Card, CardContent, CardTitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
+import { useRankings } from '../contexts/RankingsContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
 
 export default function SubjectRankingsPage() {
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
-    const [rankingOptions, setRankingOptions] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { rankingOptions, loading, error } = useRankings();
 
     // Source selection state
     const [selectedSource, setSelectedSource] = useState(null);
@@ -25,16 +24,6 @@ export default function SubjectRankingsPage() {
     // Bottom sheet for source selection only
     const sourceBottomSheetRef = useRef(null);
     const snapPoints = useMemo(() => ['25%', '50%'], []);
-
-    useEffect(() => {
-        async function fetchOptions() {
-            setLoading(true);
-            const options = await getRankingOptions();
-            setRankingOptions(options);
-            setLoading(false);
-        }
-        fetchOptions();
-    }, []);
 
     // Extract unique sources for selection
     useEffect(() => {
@@ -80,6 +69,14 @@ export default function SubjectRankingsPage() {
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
                 <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading rankings...</Text>
+            </GestureHandlerRootView>
+        );
+    }
+
+    if (error) {
+        return (
+            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+                <Text style={[styles.errorText, { color: theme.text }]}>Error loading rankings. Please try again.</Text>
             </GestureHandlerRootView>
         );
     }
@@ -221,6 +218,11 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
+    },
+    errorText: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginHorizontal: 20,
     },
     title: {
         fontSize: 26,

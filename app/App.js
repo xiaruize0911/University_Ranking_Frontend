@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
@@ -13,6 +14,19 @@ import MeScreen from './MeScreen';
 import { formatSourceName } from '../utils/textFormatter';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
+import { RankingsProvider } from '../contexts/RankingsContext';
+
+// Create a client
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 5 * 60 * 1000, // 5 minutes
+			cacheTime: 10 * 60 * 1000, // 10 minutes
+			retry: 2,
+			refetchOnWindowFocus: false,
+		},
+	},
+});
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -208,8 +222,12 @@ function AppContent() {
 
 export default function App() {
 	return (
-		<ThemeProvider>
-			<AppContent />
-		</ThemeProvider>
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider>
+				<RankingsProvider>
+					<AppContent />
+				</RankingsProvider>
+			</ThemeProvider>
+		</QueryClientProvider>
 	);
 }
