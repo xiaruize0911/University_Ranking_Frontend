@@ -132,16 +132,17 @@ export default function MeScreen() {
 
     // Handle theme change and update profile
     const handleThemeToggle = async () => {
+        // The ThemeContext now handles saving the theme preference
         toggleTheme();
-        const newTheme = !isDarkMode ? 'dark' : 'light';
 
+        // Update the local profile state to reflect the change
+        const newTheme = !isDarkMode ? 'dark' : 'light';
         const updatedProfile = {
             ...userProfile,
             themePreference: newTheme,
             lastUpdated: new Date().toISOString()
         };
         setUserProfile(updatedProfile);
-        await saveUserProfile(updatedProfile);
     };
 
     const viewProfile = async () => {
@@ -187,138 +188,138 @@ export default function MeScreen() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }}>
-            <SafeAreaView style={styles.safeArea}>
-                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            {/* <SafeAreaView style={styles.safeArea}> */}
+            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
-                    {/* Theme Selection Card */}
-                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                        <CardContent>
+                {/* Theme Selection Card */}
+                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                    <CardContent>
+                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                            <Ionicons name="color-palette-outline" size={20} color={theme.primary} style={styles.iconMargin} />
+                            Theme Settings
+                        </CardTitle>
+                        <Button
+                            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            onPress={handleThemeToggle}
+                            variant="outline"
+                            textStyle={{ color: theme.text }}
+                            style={[styles.themeButton, { backgroundColor: theme.surfaceSecondary }]}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* Favorite Universities Card */}
+                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                    <CardContent>
+                        <View style={styles.headerRow}>
                             <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                <Ionicons name="color-palette-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                                Theme Settings
+                                <Ionicons name="heart-outline" size={20} color={theme.primary} style={styles.iconMargin} />
+                                Favorite Universities ({favoriteUniversities.length})
                             </CardTitle>
+                            {favoriteUniversities.length > 0 && (
+                                <TouchableOpacity onPress={clearAllFavorites}>
+                                    <Text style={[styles.clearText, { color: theme.primary }]}>Clear All</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        {favoriteUniversities.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Ionicons name="heart-dislike-outline" size={48} color={theme.textSecondary} />
+                                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                                    No favorite universities yet
+                                </Text>
+                                <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
+                                    Favorite universities will appear here
+                                </Text>
+                            </View>
+                        ) : (
+                            favoriteUniversities.map((university, index) => (
+                                <TouchableOpacity
+                                    key={university.id || index}
+                                    onPress={() => navigation.navigate('DetailPage', {
+                                        normalized_name: university.normalized_name,
+                                        name: university.name
+                                    })}
+                                    activeOpacity={0.7}
+                                >
+                                    <Card style={[styles.favCard, { backgroundColor: theme.surfaceSecondary }]}>
+                                        <CardContent>
+                                            <View style={styles.favRow}>
+                                                <View style={styles.favInfo}>
+                                                    <CardTitle style={[styles.favTitle, { color: theme.text }]}>
+                                                        {university.name}
+                                                    </CardTitle>
+                                                    <CardSubtitle style={[styles.favSubtitle, { color: theme.textSecondary }]}>
+                                                        {university.country || 'Unknown Country'}
+                                                    </CardSubtitle>
+                                                </View>
+                                                <TouchableOpacity
+                                                    onPress={(e) => {
+                                                        e.stopPropagation(); // Prevent navigation when removing favorite
+                                                        removeFavorite(university.id);
+                                                    }}
+                                                    style={styles.removeButton}
+                                                >
+                                                    <Ionicons name="heart-dislike" size={24} color={theme.primary} />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </CardContent>
+                                    </Card>
+                                </TouchableOpacity>
+                            ))
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* User Profile Card */}
+                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                    <CardContent>
+                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                            <Ionicons name="person-outline" size={20} color={theme.primary} style={styles.iconMargin} />
+                            User Profile
+                        </CardTitle>
+                        <Text style={[styles.profileDescription, { color: theme.textSecondary }]}>
+                            Your preferences and settings are automatically saved to a profile file
+                        </Text>
+
+                        <View style={styles.profileInfo}>
+                            <Text style={[styles.profileItem, { color: theme.text }]}>
+                                Theme Preference: <Text style={{ color: theme.primary }}>{userProfile.themePreference}</Text>
+                            </Text>
+                            <Text style={[styles.profileItem, { color: theme.text }]}>
+                                Favorite Universities: <Text style={{ color: theme.primary }}>{userProfile.favoriteCount}</Text>
+                            </Text>
+                            {userProfile.lastUpdated && (
+                                <Text style={[styles.profileItem, { color: theme.textSecondary }]}>
+                                    Last Updated: {new Date(userProfile.lastUpdated).toLocaleDateString()}
+                                </Text>
+                            )}
+                        </View>
+
+                        <View style={styles.buttonRow}>
                             <Button
-                                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                                onPress={handleThemeToggle}
+                                title="View Profile"
+                                onPress={viewProfile}
                                 variant="outline"
                                 textStyle={{ color: theme.text }}
-                                style={[styles.themeButton, { backgroundColor: theme.surfaceSecondary }]}
+                                style={[styles.profileButton, { marginRight: 8, backgroundColor: theme.surfaceSecondary }]}
                             />
-                        </CardContent>
-                    </Card>
+                            <Button
+                                title="Reset Profile"
+                                onPress={resetProfile}
+                                variant="outline"
+                                textStyle={{ color: theme.text }}
+                                style={[styles.profileButton, { backgroundColor: theme.surfaceSecondary }]}
+                            />
+                        </View>
+                    </CardContent>
+                </Card>
 
-                    {/* Favorite Universities Card */}
-                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                        <CardContent>
-                            <View style={styles.headerRow}>
-                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                    <Ionicons name="heart-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                                    Favorite Universities ({favoriteUniversities.length})
-                                </CardTitle>
-                                {favoriteUniversities.length > 0 && (
-                                    <TouchableOpacity onPress={clearAllFavorites}>
-                                        <Text style={[styles.clearText, { color: theme.primary }]}>Clear All</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-
-                            {favoriteUniversities.length === 0 ? (
-                                <View style={styles.emptyState}>
-                                    <Ionicons name="heart-dislike-outline" size={48} color={theme.textSecondary} />
-                                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                                        No favorite universities yet
-                                    </Text>
-                                    <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
-                                        Favorite universities will appear here
-                                    </Text>
-                                </View>
-                            ) : (
-                                favoriteUniversities.map((university, index) => (
-                                    <TouchableOpacity
-                                        key={university.id || index}
-                                        onPress={() => navigation.navigate('DetailPage', {
-                                            normalized_name: university.normalized_name,
-                                            name: university.name
-                                        })}
-                                        activeOpacity={0.7}
-                                    >
-                                        <Card style={[styles.favCard, { backgroundColor: theme.surfaceSecondary }]}>
-                                            <CardContent>
-                                                <View style={styles.favRow}>
-                                                    <View style={styles.favInfo}>
-                                                        <CardTitle style={[styles.favTitle, { color: theme.text }]}>
-                                                            {university.name}
-                                                        </CardTitle>
-                                                        <CardSubtitle style={[styles.favSubtitle, { color: theme.textSecondary }]}>
-                                                            {university.country || 'Unknown Country'}
-                                                        </CardSubtitle>
-                                                    </View>
-                                                    <TouchableOpacity
-                                                        onPress={(e) => {
-                                                            e.stopPropagation(); // Prevent navigation when removing favorite
-                                                            removeFavorite(university.id);
-                                                        }}
-                                                        style={styles.removeButton}
-                                                    >
-                                                        <Ionicons name="heart-dislike" size={24} color={theme.primary} />
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </CardContent>
-                                        </Card>
-                                    </TouchableOpacity>
-                                ))
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* User Profile Card */}
-                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                        <CardContent>
-                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                <Ionicons name="person-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                                User Profile
-                            </CardTitle>
-                            <Text style={[styles.profileDescription, { color: theme.textSecondary }]}>
-                                Your preferences and settings are automatically saved to a profile file
-                            </Text>
-
-                            <View style={styles.profileInfo}>
-                                <Text style={[styles.profileItem, { color: theme.text }]}>
-                                    Theme Preference: <Text style={{ color: theme.primary }}>{userProfile.themePreference}</Text>
-                                </Text>
-                                <Text style={[styles.profileItem, { color: theme.text }]}>
-                                    Favorite Universities: <Text style={{ color: theme.primary }}>{userProfile.favoriteCount}</Text>
-                                </Text>
-                                {userProfile.lastUpdated && (
-                                    <Text style={[styles.profileItem, { color: theme.textSecondary }]}>
-                                        Last Updated: {new Date(userProfile.lastUpdated).toLocaleDateString()}
-                                    </Text>
-                                )}
-                            </View>
-
-                            <View style={styles.buttonRow}>
-                                <Button
-                                    title="View Profile"
-                                    onPress={viewProfile}
-                                    variant="outline"
-                                    textStyle={{ color: theme.text }}
-                                    style={[styles.profileButton, { marginRight: 8, backgroundColor: theme.surfaceSecondary }]}
-                                />
-                                <Button
-                                    title="Reset Profile"
-                                    onPress={resetProfile}
-                                    variant="outline"
-                                    textStyle={{ color: theme.text }}
-                                    style={[styles.profileButton, { backgroundColor: theme.surfaceSecondary }]}
-                                />
-                            </View>
-                        </CardContent>
-                    </Card>
-
-                    <View style={{ height: 20 }} />
-                </ScrollView>
-            </SafeAreaView>
-        </GestureHandlerRootView>
+                <View style={{ height: 20 }} />
+            </ScrollView>
+            {/* </SafeAreaView> */}
+        </GestureHandlerRootView >
     );
 }
 
