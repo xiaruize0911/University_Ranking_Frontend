@@ -83,8 +83,6 @@ export default function SubjectRankingsPage() {
 
     return (
         <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <Text style={[styles.title, { color: theme.text }]}>Rankings By Subject and Source</Text>
-
             <View style={styles.filterRow}>
                 <View style={[styles.filterBlock]}>
                     <Button
@@ -98,8 +96,10 @@ export default function SubjectRankingsPage() {
                 <View style={styles.filterBlock}>
                     <Input
                         placeholder="Subject/Region"
+                        placeholderTextColor={theme.textSecondary}
                         value={subjectInput}
                         onChangeText={setSubjectInput}
+                        textStyle={{ color: theme.text }}
                         style={{ backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }}
                     />
                 </View>
@@ -148,21 +148,24 @@ export default function SubjectRankingsPage() {
                                                             }
                                                             : {
                                                                 width: dimensions.window.width - 80,
-                                                                height: 80,
                                                                 alignSelf: 'center',
                                                                 marginBottom: 8
                                                             }
                                                     ]}
                                                 >
-                                                    <Text style={[styles.rankNumber, { color: theme.primary }]}>#{uniIdx + 1}</Text>
                                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
-                                                        <Text style={[
-                                                            styles.universityName,
-                                                            { color: theme.text },
-                                                            direction === 'row'
-                                                                ? { fontSize: 12, lineHeight: 14 }
-                                                                : { fontSize: 14, lineHeight: 18 }
-                                                        ]}>{uni.name ? uni.name : uni.normalized_name}</Text>
+                                                        <Text>
+                                                            <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>#{uniIdx + 1} </Text>
+                                                            <Text style={[
+                                                                styles.universityName,
+                                                                { color: theme.text },
+                                                                direction === 'row'
+                                                                    ? { fontSize: 12, lineHeight: 14 }
+                                                                    : { fontSize: 14, lineHeight: 18 }
+                                                            ]}>
+                                                                {uni.name ? uni.name : uni.normalized_name}
+                                                            </Text>
+                                                        </Text>
                                                     </View>
                                                 </View>
                                             </TouchableOpacity>
@@ -172,8 +175,9 @@ export default function SubjectRankingsPage() {
                             </CardContent>
                         </Card>
                     </TouchableOpacity>
-                )}
-                ListHeaderComponent={<View />}
+                )
+                }
+                ListHeaderComponent={< View />}
             />
 
             {/* Source Selection Bottom Sheet Modal */}
@@ -201,7 +205,7 @@ export default function SubjectRankingsPage() {
                     ))}
                 </BottomSheetScrollView>
             </BottomSheetModal>
-        </GestureHandlerRootView>
+        </GestureHandlerRootView >
     );
 }
 
