@@ -49,22 +49,19 @@ function HomeScreen() {
 			<Stack.Screen
 				name="College Rankings"
 				component={SearchScreen}
-				options={{ title: 'University Search & Rankings' }}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name ? `Details: ${route.params.name}` : 'University Details',
+					title: route.params.name || 'University Details',
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName && route.params.source
-						? `${route.params.universityName} - ${formatSourceName(route.params.source)} Rankings`
-						: 'Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
 				})}
 			/>
 		</Stack.Navigator>
@@ -89,31 +86,26 @@ function SubjectRankings() {
 			<Stack.Screen
 				name="Rankings of Subjects&Regions"
 				component={SubjectRankingsPage}
-				options={{ title: 'Subject & Region Rankings' }}
 			/>
 			<Stack.Screen
 				name="RankingDetailPage"
 				component={RankingDetailPage}
 				options={({ route }) => ({
-					title: route.params.subject && route.params.source
-						? `Ranking: ${formatSubjectName(route.params.subject)} (${formatSourceName(route.params.source)})`
-						: 'Ranking Details',
+					title: route.params.name || route.params.normalized_name || 'University Details',
 				})}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name ? `Details: ${route.params.name}` : 'University Details',
+					title: route.params.name || 'University Details',
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName && route.params.source
-						? `${route.params.universityName} - ${formatSourceName(route.params.source)} Rankings`
-						: 'Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
 				})}
 			/>
 		</Stack.Navigator>
@@ -138,22 +130,19 @@ function MeScreenStack() {
 			<Stack.Screen
 				name="Me"
 				component={MeScreen}
-				options={{ title: 'My Profile & Favorites' }}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name ? `Details: ${route.params.name}` : 'University Details',
+					title: route.params.name || 'University Details',
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName && route.params.source
-						? `${route.params.universityName} - ${formatSourceName(route.params.source)} Rankings`
-						: 'Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
 				})}
 			/>
 		</Stack.Navigator>
