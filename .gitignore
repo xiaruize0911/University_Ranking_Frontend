@@ -37,3 +37,17 @@ yarn-error.*
 
 # Local Netlify folder
 .netlify
+
+# IDE
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.apk
+*.ipa
+
+# Firebase service account keys
+*service*account*.json
+*firebase*key*.json
