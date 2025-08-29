@@ -25,6 +25,8 @@ export const RankingsProvider = ({ children }) => {
 
     // Load cached data on mount
     useEffect(() => {
+        let isMounted = true;
+
         const loadCache = async () => {
             try {
                 let cachedData = null;
@@ -42,41 +44,58 @@ export const RankingsProvider = ({ children }) => {
                     }
                 }
 
-                if (cachedData && Array.isArray(cachedData)) {
+                if (isMounted && cachedData && Array.isArray(cachedData)) {
                     setRankingOptions(cachedData);
                 }
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             } catch (e) {
                 console.error('Error loading cached ranking options:', e);
-                setRankingOptions([]);
-                setLoading(false);
+                if (isMounted) {
+                    setRankingOptions([]);
+                    setLoading(false);
+                }
             }
         };
+
         loadCache();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     // Update cache when fresh data is available
     useEffect(() => {
-        const updateCache = async () => {
-            if (freshData && Array.isArray(freshData) && freshData.length > 0) {
-                setRankingOptions(freshData);
-                setLoading(false);
+        let isMounted = true;
 
-                try {
-                    if (Platform.OS === 'web') {
-                        window.localStorage.setItem(cacheKey, JSON.stringify(freshData));
-                    } else {
-                        await FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(freshData));
-                    }
-                } catch (e) {
-                    console.error('Error saving ranking options to cache:', e);
+        const updateCache = async () => {
+            if (!isMounted || !freshData || !Array.isArray(freshData) || freshData.length === 0) {
+                return;
+            }
+
+            setRankingOptions(freshData);
+            setLoading(false);
+
+            try {
+                if (Platform.OS === 'web') {
+                    window.localStorage.setItem(cacheKey, JSON.stringify(freshData));
+                } else {
+                    await FileSystem.writeAsStringAsync(cacheFile, JSON.stringify(freshData));
                 }
+            } catch (e) {
+                console.error('Error saving ranking options to cache:', e);
             }
         };
 
         if (!isLoading && freshData) {
             updateCache();
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [freshData, isLoading]);
 
     const contextValue = {

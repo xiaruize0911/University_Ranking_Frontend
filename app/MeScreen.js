@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as Localization from 'expo-localization';
-import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Alert, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -30,48 +30,139 @@ export default function MeScreen() {
 
     // Load user profile and favorites on initial mount
     useEffect(() => {
+        let isMounted = true;
+
+        const loadUserProfile = async () => {
+            try {
+                if (Platform.OS === 'web') {
+                    // Use localStorage for web
+                    const profileData = window.localStorage.getItem('userProfile');
+                    if (profileData) {
+                        const profile = JSON.parse(profileData);
+                        if (isMounted) {
+                            setUserProfile(profile);
+                        }
+                    } else {
+                        // Create default profile
+                        const defaultProfile = {
+                            themePreference: isDarkMode ? 'dark' : 'light',
+                            lastUpdated: new Date().toISOString(),
+                            favoriteCount: 0,
+                            languagePreference: currentLanguage
+                        };
+                        await saveUserProfile(defaultProfile);
+                        if (isMounted) {
+                            setUserProfile(defaultProfile);
+                        }
+                    }
+                } else {
+                    // Use FileSystem for mobile
+                    const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                    const profileExists = await FileSystem.getInfoAsync(profileFile);
+
+                    if (profileExists.exists) {
+                        const profileContent = await FileSystem.readAsStringAsync(profileFile);
+                        const profile = JSON.parse(profileContent);
+                        if (isMounted) {
+                            setUserProfile(profile);
+                        }
+                    } else {
+                        // Create default profile
+                        const defaultProfile = {
+                            themePreference: isDarkMode ? 'dark' : 'light',
+                            lastUpdated: new Date().toISOString(),
+                            favoriteCount: 0,
+                            languagePreference: currentLanguage
+                        };
+                        await saveUserProfile(defaultProfile);
+                        if (isMounted) {
+                            setUserProfile(defaultProfile);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(i18n.t('error_loading_user_profile') + ':', error);
+            }
+        };
+
+        const loadFavorites = async () => {
+            try {
+                const stored = await AsyncStorage.getItem('favoriteUniversities');
+                if (stored) {
+                    const favorites = JSON.parse(stored);
+                    if (isMounted) {
+                        setFavoriteUniversities(favorites);
+
+                        // Update profile state with current favorite count
+                        const updatedProfile = {
+                            ...userProfile,
+                            favoriteCount: favorites.length,
+                            lastUpdated: new Date().toISOString()
+                        };
+                        setUserProfile(updatedProfile);
+                        // Note: We don't save here to avoid conflicts with context-managed preferences
+                    }
+                }
+            } catch (error) {
+                console.error(i18n.t('error_loading_favorites') + ':', error);
+            }
+        };
+
         loadUserProfile();
         loadFavorites();
-    }, []);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [currentLanguage, isDarkMode, userProfile]);
 
     // Refresh favorites every time the screen comes into focus
     useFocusEffect(
         useCallback(() => {
+            let isMounted = true;
+
+            const loadFavorites = async () => {
+                try {
+                    const stored = await AsyncStorage.getItem('favoriteUniversities');
+                    if (stored) {
+                        const favorites = JSON.parse(stored);
+                        if (isMounted) {
+                            setFavoriteUniversities(favorites);
+
+                            // Update profile state with current favorite count
+                            const updatedProfile = {
+                                ...userProfile,
+                                favoriteCount: favorites.length,
+                                lastUpdated: new Date().toISOString()
+                            };
+                            setUserProfile(updatedProfile);
+                            // Note: We don't save here to avoid conflicts with context-managed preferences
+                        }
+                    }
+                } catch (error) {
+                    console.error(i18n.t('error_loading_favorites') + ':', error);
+                }
+            };
+
             loadFavorites();
-        }, [])
+
+            return () => {
+                isMounted = false;
+            };
+        }, [userProfile])
     );
-
-    // Load user profile from file
-    const loadUserProfile = async () => {
-        try {
-            const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-            const profileExists = await FileSystem.getInfoAsync(profileFile);
-
-            if (profileExists.exists) {
-                const profileContent = await FileSystem.readAsStringAsync(profileFile);
-                const profile = JSON.parse(profileContent);
-                setUserProfile(profile);
-            } else {
-                // Create default profile
-                const defaultProfile = {
-                    themePreference: isDarkMode ? 'dark' : 'light',
-                    lastUpdated: new Date().toISOString(),
-                    favoriteCount: 0,
-                    languagePreference: currentLanguage
-                };
-                await saveUserProfile(defaultProfile);
-                setUserProfile(defaultProfile);
-            }
-        } catch (error) {
-            console.error(i18n.t('error_loading_user_profile') + ':', error);
-        }
-    };
 
     // Save user profile to file
     const saveUserProfile = async (profile) => {
         try {
-            const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-            await FileSystem.writeAsStringAsync(profileFile, JSON.stringify(profile, null, 2));
+            if (Platform.OS === 'web') {
+                // Save to localStorage for web
+                window.localStorage.setItem('userProfile', JSON.stringify(profile));
+            } else {
+                // Save to FileSystem for mobile
+                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                await FileSystem.writeAsStringAsync(profileFile, JSON.stringify(profile, null, 2));
+            }
         } catch (error) {
             console.error(i18n.t('error_saving_user_profile') + ':', error);
         }
@@ -91,27 +182,6 @@ export default function MeScreen() {
         } catch (error) {
             console.error('Failed to restart app:', error);
             Alert.alert(i18n.t('error'), i18n.t('restart_failed'));
-        }
-    };
-
-    const loadFavorites = async () => {
-        try {
-            const stored = await AsyncStorage.getItem('favoriteUniversities');
-            if (stored) {
-                const favorites = JSON.parse(stored);
-                setFavoriteUniversities(favorites);
-
-                // Update profile state with current favorite count
-                const updatedProfile = {
-                    ...userProfile,
-                    favoriteCount: favorites.length,
-                    lastUpdated: new Date().toISOString()
-                };
-                setUserProfile(updatedProfile);
-                // Note: We don't save here to avoid conflicts with context-managed preferences
-            }
-        } catch (error) {
-            console.error(i18n.t('error_loading_favorites') + ':', error);
         }
     };
 
@@ -167,9 +237,16 @@ export default function MeScreen() {
 
     const viewProfile = async () => {
         try {
-            const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-            const profileContent = await FileSystem.readAsStringAsync(profileFile);
-            Alert.alert(i18n.t('user_profile'), profileContent || i18n.t('no_profile_found'));
+            if (Platform.OS === 'web') {
+                // Get from localStorage for web
+                const profileData = window.localStorage.getItem('userProfile');
+                Alert.alert(i18n.t('user_profile'), profileData || i18n.t('no_profile_found'));
+            } else {
+                // Get from FileSystem for mobile
+                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                const profileContent = await FileSystem.readAsStringAsync(profileFile);
+                Alert.alert(i18n.t('user_profile'), profileContent || i18n.t('no_profile_found'));
+            }
         } catch (error) {
             Alert.alert(i18n.t('error'), i18n.t('could_not_read_profile'));
         }
@@ -186,8 +263,14 @@ export default function MeScreen() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-                            await FileSystem.deleteAsync(profileFile, { idempotent: true });
+                            if (Platform.OS === 'web') {
+                                // Clear from localStorage for web
+                                window.localStorage.removeItem('userProfile');
+                            } else {
+                                // Delete from FileSystem for mobile
+                                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                                await FileSystem.deleteAsync(profileFile, { idempotent: true });
+                            }
 
                             const defaultProfile = {
                                 themePreference: 'light',

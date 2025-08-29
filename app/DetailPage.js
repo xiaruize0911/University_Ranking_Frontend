@@ -50,25 +50,39 @@ export default function GetUniversityDetail(props) {
 
     // Translate blurb when university data is loaded and language is Chinese
     useEffect(() => {
+        let isMounted = true;
+
         const translateBlurbIfNeeded = async () => {
             if (university && university.blurb && isChinese) {
                 setTranslationLoading(true);
                 try {
                     const translated = await translateText(university.blurb, 'en', 'zh-Hans');
-                    setTranslatedBlurb(translated);
+                    if (isMounted) {
+                        setTranslatedBlurb(translated);
+                    }
                 } catch (error) {
                     console.error('Translation failed:', error);
-                    setTranslatedBlurb(''); // Clear translated text on error
+                    if (isMounted) {
+                        setTranslatedBlurb(''); // Clear translated text on error
+                    }
                 } finally {
-                    setTranslationLoading(false);
+                    if (isMounted) {
+                        setTranslationLoading(false);
+                    }
                 }
             } else if (!isChinese) {
                 // Clear translated text when switching back to English
-                setTranslatedBlurb('');
+                if (isMounted) {
+                    setTranslatedBlurb('');
+                }
             }
         };
 
         translateBlurbIfNeeded();
+
+        return () => {
+            isMounted = false;
+        };
     }, [university, isChinese]); // Re-run when university or language changes
 
     // Check if current university is in favorites

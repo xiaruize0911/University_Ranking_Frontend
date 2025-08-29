@@ -13,20 +13,6 @@ export default function SearchScreen() {
     // Animated spinner for loading
     const spinValue = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        if (isLoading) {
-            Animated.loop(
-                Animated.timing(spinValue, {
-                    toValue: 1,
-                    duration: 1200,
-                    easing: Easing.linear,
-                    useNativeDriver: true,
-                })
-            ).start();
-        } else {
-            spinValue.setValue(0);
-        }
-    }, [isLoading]);
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
     const { currentLanguage } = useLanguage();
@@ -47,22 +33,57 @@ export default function SearchScreen() {
     const rankingSheetRef = useRef(null);
     const snapPoints = useMemo(() => ['60%', '75%', '90%'], []);
 
+    useEffect(() => {
+        if (isLoading) {
+            Animated.loop(
+                Animated.timing(spinValue, {
+                    toValue: 1,
+                    duration: 1200,
+                    easing: Easing.linear,
+                    useNativeDriver: true,
+                })
+            ).start();
+        } else {
+            spinValue.setValue(0);
+        }
+    }, [isLoading]);
+
     // --- Data Fetching Logic ---
     useEffect(() => {
-        setIsLoading(true);
-        fetchData();
-    }, [query, country, sortCredit]);
+        let isMounted = true;
 
-    const fetchData = async () => {
-        const data = await searchUniversities({ query, country, sort_credit: sortCredit });
-        const cleaned = data.map(u => ({
-            ...u,
-            country: u.country || i18n.t('not_available'),
-            city: u.city || i18n.t('not_available')
-        }));
-        setResults(cleaned);
-        setIsLoading(false);
-    };
+        const fetchData = async () => {
+            if (!isMounted) return;
+
+            setIsLoading(true);
+            try {
+                const data = await searchUniversities({ query, country, sort_credit: sortCredit });
+                if (!isMounted) return;
+
+                const cleaned = data.map(u => ({
+                    ...u,
+                    country: u.country || i18n.t('not_available'),
+                    city: u.city || i18n.t('not_available')
+                }));
+                setResults(cleaned);
+            } catch (error) {
+                console.error('Error fetching universities:', error);
+                if (isMounted) {
+                    setResults([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [query, country, sortCredit]);
 
     useEffect(() => {
         (async () => {

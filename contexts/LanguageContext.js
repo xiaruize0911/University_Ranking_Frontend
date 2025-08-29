@@ -20,31 +20,41 @@ export const LanguageProvider = ({ children }) => {
 
     // Load saved language preference on app startup
     useEffect(() => {
-        loadLanguagePreference();
-    }, []);
+        let isMounted = true;
 
-    const loadLanguagePreference = async () => {
-        try {
-            const savedLang = await loadSavedLanguagePreference();
-            if (savedLang && (savedLang === 'en' || savedLang === 'zh')) {
-                setCurrentLanguage(savedLang);
-                i18n.locale = savedLang;
-            } else {
-                // Use device language as fallback
-                const deviceLang = Localization.locale.startsWith('zh') ? 'zh' : 'en';
-                setCurrentLanguage(deviceLang);
-                i18n.locale = deviceLang;
+        const loadLanguagePreference = async () => {
+            try {
+                const savedLang = await loadSavedLanguagePreference();
+                if (savedLang && (savedLang === 'en' || savedLang === 'zh') && isMounted) {
+                    setCurrentLanguage(savedLang);
+                    i18n.locale = savedLang;
+                } else if (isMounted) {
+                    // Use device language as fallback
+                    const deviceLang = Localization.locale.startsWith('zh') ? 'zh' : 'en';
+                    setCurrentLanguage(deviceLang);
+                    i18n.locale = deviceLang;
+                }
+            } catch (error) {
+                console.error('Error loading language preference:', error);
+                if (isMounted) {
+                    // Fallback to device language
+                    const deviceLang = Localization.locale.startsWith('zh') ? 'zh' : 'en';
+                    setCurrentLanguage(deviceLang);
+                    i18n.locale = deviceLang;
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
-        } catch (error) {
-            console.error('Error loading language preference:', error);
-            // Fallback to device language
-            const deviceLang = Localization.locale.startsWith('zh') ? 'zh' : 'en';
-            setCurrentLanguage(deviceLang);
-            i18n.locale = deviceLang;
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
+
+        loadLanguagePreference();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const changeLanguage = async (newLanguage) => {
         if (newLanguage !== currentLanguage && (newLanguage === 'en' || newLanguage === 'zh')) {

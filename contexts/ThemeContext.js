@@ -47,42 +47,52 @@ export const ThemeProvider = ({ children }) => {
 
     // Load saved theme preference on app startup
     useEffect(() => {
-        loadSavedThemePreference();
-    }, []);
+        let isMounted = true;
 
-    const loadSavedThemePreference = async () => {
-        try {
-            if (Platform.OS === 'web') {
-                // Use localStorage for web
-                const themePref = window.localStorage.getItem('themePreference');
-                if (themePref) {
-                    setIsDarkMode(themePref === 'dark');
-                } else {
-                    setIsDarkMode(systemColorScheme === 'dark');
-                }
-            } else {
-                // Use FileSystem for mobile
-                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-                const profileExists = await FileSystem.getInfoAsync(profileFile);
-                if (profileExists.exists) {
-                    const profileContent = await FileSystem.readAsStringAsync(profileFile);
-                    const profile = JSON.parse(profileContent);
-                    if (profile.themePreference) {
-                        setIsDarkMode(profile.themePreference === 'dark');
-                    } else {
+        const loadSavedThemePreference = async () => {
+            try {
+                if (Platform.OS === 'web') {
+                    // Use localStorage for web
+                    const themePref = window.localStorage.getItem('themePreference');
+                    if (themePref && isMounted) {
+                        setIsDarkMode(themePref === 'dark');
+                    } else if (isMounted) {
                         setIsDarkMode(systemColorScheme === 'dark');
                     }
                 } else {
+                    // Use FileSystem for mobile
+                    const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                    const profileExists = await FileSystem.getInfoAsync(profileFile);
+                    if (profileExists.exists) {
+                        const profileContent = await FileSystem.readAsStringAsync(profileFile);
+                        const profile = JSON.parse(profileContent);
+                        if (profile.themePreference && isMounted) {
+                            setIsDarkMode(profile.themePreference === 'dark');
+                        } else if (isMounted) {
+                            setIsDarkMode(systemColorScheme === 'dark');
+                        }
+                    } else if (isMounted) {
+                        setIsDarkMode(systemColorScheme === 'dark');
+                    }
+                }
+            } catch (error) {
+                console.error(i18n.t('error_loading_theme_preference') + ':', error);
+                if (isMounted) {
                     setIsDarkMode(systemColorScheme === 'dark');
                 }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
-        } catch (error) {
-            console.error(i18n.t('error_loading_theme_preference') + ':', error);
-            setIsDarkMode(systemColorScheme === 'dark');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
+
+        loadSavedThemePreference();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [systemColorScheme]);
 
     const toggleTheme = async () => {
         const newTheme = !isDarkMode;
