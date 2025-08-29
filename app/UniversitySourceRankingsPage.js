@@ -5,8 +5,10 @@ import { getUniversityRankingsBySource } from '../lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
+import i18n from '../lib/i18n';
 
 export default function UniversitySourceRankingsPage({ route }) {
     // Expect route.params: { normalizedName, universityName, source }
@@ -15,6 +17,7 @@ export default function UniversitySourceRankingsPage({ route }) {
     const [rankingData, setRankingData] = useState(null);
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
+    const { currentLanguage } = useLanguage();
 
     useEffect(() => {
         async function fetchRankings() {
@@ -31,7 +34,7 @@ export default function UniversitySourceRankingsPage({ route }) {
             <CardContent>
                 <CardTitle style={[styles.title, { color: theme.text }]}>{universityName}</CardTitle>
                 <CardSubtitle style={[styles.subtitle, { color: theme.primary }]}>
-                    {formatSourceName(source)} Rankings
+                    {formatSourceName(source)} {i18n.t('rankings')}
                 </CardSubtitle>
             </CardContent>
         </Card>
@@ -41,7 +44,7 @@ export default function UniversitySourceRankingsPage({ route }) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
-                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading rankings...</Text>
+                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_rankings')}</Text>
             </GestureHandlerRootView>
         );
     }
@@ -49,7 +52,7 @@ export default function UniversitySourceRankingsPage({ route }) {
     if (!rankingData || rankingData.error) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
-                <Text style={[styles.errorText, { color: theme.text }]}>No rankings found for this source.</Text>
+                <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('no_rankings_found')}</Text>
             </GestureHandlerRootView>
         );
     }
@@ -65,7 +68,7 @@ export default function UniversitySourceRankingsPage({ route }) {
                         <Card style={[styles.rankingCard, { backgroundColor: theme.surface }]}>
                             <CardContent style={styles.cardContent}>
                                 <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
-                                    <Text style={styles.rank}>#{item.rank_value}</Text>
+                                    <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
                                 </View>
                                 <View style={styles.infoContainer}>
                                     <CardTitle style={[styles.subjectText, { color: theme.text }]}>
@@ -79,7 +82,7 @@ export default function UniversitySourceRankingsPage({ route }) {
                         <Card style={[styles.emptyCard, { backgroundColor: theme.surface }]}>
                             <CardContent>
                                 <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                                    No rankings available for {formatSourceName(source)}
+                                    {i18n.t('no_rankings_available')} {formatSourceName(source)}
                                 </Text>
                             </CardContent>
                         </Card>

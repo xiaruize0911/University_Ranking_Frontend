@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import * as Localization from 'expo-localization';
+import i18n from '../lib/i18n';
 
 const ThemeContext = createContext();
 
@@ -75,7 +77,7 @@ export const ThemeProvider = ({ children }) => {
                 }
             }
         } catch (error) {
-            console.error('Error loading theme preference:', error);
+            console.error(i18n.t('error_loading_theme_preference') + ':', error);
             setIsDarkMode(systemColorScheme === 'dark');
         } finally {
             setIsLoading(false);
@@ -95,9 +97,9 @@ export const ThemeProvider = ({ children }) => {
                 const profileFile = FileSystem.documentDirectory + 'user_profile.json';
                 let profile = {
                     themePreference: newTheme ? 'dark' : 'light',
-                    lastUpdated: new Date().toISOString(),
-                    favoriteCount: 0
+                    lastUpdated: new Date().toISOString()
                 };
+
                 const profileExists = await FileSystem.getInfoAsync(profileFile);
                 if (profileExists.exists) {
                     const existingProfileContent = await FileSystem.readAsStringAsync(profileFile);
@@ -107,11 +109,19 @@ export const ThemeProvider = ({ children }) => {
                         themePreference: newTheme ? 'dark' : 'light',
                         lastUpdated: new Date().toISOString()
                     };
+                } else {
+                    // Create default profile with only theme preference
+                    profile = {
+                        themePreference: newTheme ? 'dark' : 'light',
+                        languagePreference: 'en',
+                        favoriteCount: 0,
+                        lastUpdated: new Date().toISOString()
+                    };
                 }
                 await FileSystem.writeAsStringAsync(profileFile, JSON.stringify(profile, null, 2));
             }
         } catch (error) {
-            console.error('Error saving theme preference:', error);
+            console.error(i18n.t('error_saving_theme_preference') + ':', error);
         }
     };
 

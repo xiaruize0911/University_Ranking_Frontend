@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,6 +15,8 @@ import { formatSourceName } from '../utils/textFormatter';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { RankingsProvider } from '../contexts/RankingsContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
+import i18n from '../lib/i18n';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -47,21 +49,21 @@ function HomeScreen() {
 			}}
 		>
 			<Stack.Screen
-				name="College Rankings"
+				name={i18n.t('college_rankings')}
 				component={SearchScreen}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name || 'University Details',
+					title: route.params.name || i18n.t('university_details'),
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' ' + i18n.t('rankings') || i18n.t('university_source_rankings'),
 				})}
 			/>
 		</Stack.Navigator>
@@ -84,28 +86,28 @@ function SubjectRankings() {
 			}}
 		>
 			<Stack.Screen
-				name="Rankings of Subjects&Regions"
+				name={i18n.t('rankings_of_subjects_regions')}
 				component={SubjectRankingsPage}
 			/>
 			<Stack.Screen
 				name="RankingDetailPage"
 				component={RankingDetailPage}
 				options={({ route }) => ({
-					title: route.params.name || route.params.normalized_name || 'University Details',
+					title: route.params.name || route.params.normalized_name || i18n.t('university_details'),
 				})}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name || 'University Details',
+					title: route.params.name || i18n.t('university_details'),
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' ' + i18n.t('rankings') || i18n.t('university_source_rankings'),
 				})}
 			/>
 		</Stack.Navigator>
@@ -128,21 +130,21 @@ function MeScreenStack() {
 			}}
 		>
 			<Stack.Screen
-				name="Me"
+				name={i18n.t('me')}
 				component={MeScreen}
 			/>
 			<Stack.Screen
 				name="DetailPage"
 				component={UniversityDetail}
 				options={({ route }) => ({
-					title: route.params.name || 'University Details',
+					title: route.params.name || i18n.t('university_details'),
 				})}
 			/>
 			<Stack.Screen
 				name="UniversitySourceRankingsPage"
 				component={UniversitySourceRankingsPage}
 				options={({ route }) => ({
-					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' Rankings' || 'University Source Rankings',
+					title: route.params.universityName + ' ' + formatSourceName(route.params.source) + ' ' + i18n.t('rankings') || i18n.t('university_source_rankings'),
 				})}
 			/>
 		</Stack.Navigator>
@@ -185,7 +187,7 @@ function AppContent() {
 							component={HomeScreen}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'College Rankings',
+								tabBarLabel: i18n.t('college_rankings'),
 								tabBarIcon: ({ color, size }) => (
 									<Ionicons name="home-outline" size={size} color={color} />
 								),
@@ -196,7 +198,7 @@ function AppContent() {
 							component={SubjectRankings}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Subject Rankings',
+								tabBarLabel: i18n.t('rankings_of_subjects_regions'),
 								tabBarIcon: ({ color, size }) => (
 									<Ionicons name="list-outline" size={size} color={color} />
 								),
@@ -207,7 +209,7 @@ function AppContent() {
 							component={MeScreenStack}
 							options={{
 								headerShown: false,
-								tabBarLabel: 'Me',
+								tabBarLabel: i18n.t('me'),
 								tabBarIcon: ({ color, size }) => (
 									<Ionicons name="person-outline" size={size} color={color} />
 								),
@@ -224,9 +226,11 @@ export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>
-				<RankingsProvider>
-					<AppContent />
-				</RankingsProvider>
+				<LanguageProvider>
+					<RankingsProvider>
+						<AppContent />
+					</RankingsProvider>
+				</LanguageProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
 	);

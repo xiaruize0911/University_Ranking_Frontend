@@ -1,28 +1,55 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { searchUniversities, getCountries } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useRankings } from '../contexts/RankingsContext';
+import i18n from '../lib/i18n';
 
 export default function SearchScreen() {
+    // Animated spinner for loading
+    const spinValue = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (isLoading) {
+            Animated.loop(
+                Animated.timing(spinValue, {
+                    toValue: 1,
+                    duration: 1200,
+                    easing: Easing.linear,
+                    useNativeDriver: true,
+                })
+            ).start();
+        } else {
+            spinValue.setValue(0);
+        }
+    }, [isLoading]);
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
+    const { currentLanguage } = useLanguage();
+    const { rankingOptions: subjectRankingOptions = [], loading: rankingsLoading = true } = useRankings();
     const [query, setQuery] = useState('');
     const [country, setCountry] = useState(null);
     const [sortCredit, setSortCredit] = useState('US_News_best global universities_Rankings');
     const [countrySearchQuery, setCountrySearchQuery] = useState('');
     const [results, setResults] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [allCountries, setAllCountries] = useState([]);
-    const [rankingOptions, setRankingOptions] = useState([]);
+    const [rankingOptions, setRankingOptions] = useState([
+        { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
+        { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' }
+    ]);
 
     const countrySheetRef = useRef(null);
     const rankingSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['25%', '50%', '70%'], []);
+    const snapPoints = useMemo(() => ['60%', '75%', '90%'], []);
 
     // --- Data Fetching Logic ---
     useEffect(() => {
+        setIsLoading(true);
         fetchData();
     }, [query, country, sortCredit]);
 
@@ -30,26 +57,30 @@ export default function SearchScreen() {
         const data = await searchUniversities({ query, country, sort_credit: sortCredit });
         const cleaned = data.map(u => ({
             ...u,
-            country: u.country || 'N/A',
-            city: u.city || 'N/A'
+            country: u.country || i18n.t('not_available'),
+            city: u.city || i18n.t('not_available')
         }));
         setResults(cleaned);
+        setIsLoading(false);
     };
 
     useEffect(() => {
         (async () => {
-            setRankingOptions([
-                { label: 'US News Best Global Universities', value: 'US_News_best global universities_Rankings' },
-                { label: 'QS World University Rankings', value: 'QS_World_University_Rankings' }
-            ]);
+            // Start with default ranking options
+            let searchRankingOptions = [
+                { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
+                { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' }
+            ];
+
+            setRankingOptions(searchRankingOptions);
 
             const countryOpts = await getCountries();
             setAllCountries(countryOpts);
         })();
-    }, []);
+    }, [subjectRankingOptions, rankingsLoading]);
 
     const countryItems = useMemo(() => [
-        { label: 'All Countries', value: null },
+        { label: i18n.t('all_countries'), value: null },
         ...allCountries.map(c => ({ label: c, value: c }))
     ], [allCountries]);
 
@@ -76,7 +107,7 @@ export default function SearchScreen() {
     // Find the label for the current sortCredit value
     const selectedRankingLabel = useMemo(() => {
         const found = rankingItems.find(item => item.value === sortCredit);
-        return found ? found.label : 'Sort by';
+        return found ? found.label : i18n.t('sort_by');
     }, [rankingItems, sortCredit]);
 
     const renderUniversityCard = ({ item, index }) => (
@@ -89,7 +120,7 @@ export default function SearchScreen() {
         >
             <View style={styles.cardRow}>
                 <View style={styles.rankContainer}>
-                    <Text style={[styles.rankText, { color: theme.primary }]}>#{index + 1}</Text>
+                    <Text style={[styles.rankText, { color: theme.primary }]}>{i18n.t('rank_prefix')}{index + 1}</Text>
                 </View>
                 <View style={styles.cardContent}>
                     <Text style={[styles.cardTitle, { color: theme.text }]}>{item.name}</Text>
@@ -105,7 +136,7 @@ export default function SearchScreen() {
                 <View style={[styles.container, { backgroundColor: theme.background }]}>
                     <TextInput
                         style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                        placeholder="Search University Here..."
+                        placeholder={i18n.t('search_university_here')}
                         placeholderTextColor={theme.textSecondary}
                         value={query}
                         onChangeText={setQuery}
@@ -115,7 +146,7 @@ export default function SearchScreen() {
                         style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
                         onPress={handleCountryPress}
                     >
-                        <Text style={[styles.buttonText, { color: theme.text }]}>{country || 'All Countries'}</Text>
+                        <Text style={[styles.buttonText, { color: theme.text }]}>{country || i18n.t('all_countries')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -125,14 +156,26 @@ export default function SearchScreen() {
                         <Text style={[styles.buttonText, { color: theme.text }]}>{selectedRankingLabel}</Text>
                     </TouchableOpacity>
 
-                    <FlatList
-                        style={styles.resultsList}
-                        data={results}
-                        keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
-                        renderItem={renderUniversityCard}
-                        ListHeaderComponent={<View />}
-                        showsVerticalScrollIndicator={false}
-                    />
+                    {isLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <Animated.View style={{
+                                transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+                                marginBottom: 16,
+                            }}>
+                                <ActivityIndicator size="large" color={theme.primary} />
+                            </Animated.View>
+                            <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            style={styles.resultsList}
+                            data={results}
+                            keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
+                            renderItem={renderUniversityCard}
+                            ListHeaderComponent={<View />}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    )}
                 </View>
 
                 <BottomSheetModal
@@ -145,10 +188,10 @@ export default function SearchScreen() {
                     topInset={50}
                 >
                     <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
-                        <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Country</Text>
+                        <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_country')}</Text>
                         <TextInput
                             style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                            placeholder="Search countries..."
+                            placeholder={i18n.t('search_countries')}
                             placeholderTextColor={theme.textSecondary}
                             value={countrySearchQuery}
                             onChangeText={setCountrySearchQuery}
@@ -178,7 +221,7 @@ export default function SearchScreen() {
                     handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
                 >
                     <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
-                        <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Ranking</Text>
+                        <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
                         {rankingItems.map((item, index) => (
                             <TouchableOpacity
                                 key={item.value || `key-${index}`}
@@ -199,6 +242,12 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 40,
+    },
     container: {
         padding: 16,
         flex: 1,
@@ -285,6 +334,7 @@ const styles = StyleSheet.create({
     sheetContainer: {
         flex: 1,
         padding: 16,
+        paddingBottom: 100,
     },
     sheetTitle: {
         fontSize: 18,

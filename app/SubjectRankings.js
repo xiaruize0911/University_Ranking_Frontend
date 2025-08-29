@@ -8,12 +8,15 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { Card, CardContent, CardTitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
+import i18n from '../lib/i18n';
 
 export default function SubjectRankingsPage() {
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
+    const { currentLanguage } = useLanguage();
     const { rankingOptions, loading, error } = useRankings();
 
     // Source selection state
@@ -28,7 +31,7 @@ export default function SubjectRankingsPage() {
     // Extract unique sources for selection
     useEffect(() => {
         const sources = Array.from(new Set(rankingOptions.map(opt => opt.source)));
-        setSourceItems([{ label: 'All Sources', value: null }, ...sources.map(s => ({ label: formatSourceName(s), value: s }))]);
+        setSourceItems([{ label: i18n.t('all_sources'), value: null }, ...sources.map(s => ({ label: formatSourceName(s), value: s }))]);
     }, [rankingOptions]);
 
     // Filtered rankings to display
@@ -68,7 +71,7 @@ export default function SubjectRankingsPage() {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
-                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading rankings...</Text>
+                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_rankings')}</Text>
             </GestureHandlerRootView>
         );
     }
@@ -76,7 +79,7 @@ export default function SubjectRankingsPage() {
     if (error) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
-                <Text style={[styles.errorText, { color: theme.text }]}>Error loading rankings. Please try again.</Text>
+                <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('error_loading_rankings')}</Text>
             </GestureHandlerRootView>
         );
     }
@@ -86,7 +89,7 @@ export default function SubjectRankingsPage() {
             <View style={styles.filterRow}>
                 <View style={[styles.filterBlock]}>
                     <Button
-                        title={selectedSource ? formatSourceName(selectedSource) : "Select Source"}
+                        title={selectedSource ? formatSourceName(selectedSource) : i18n.t('select_source')}
                         onPress={handleSourcePress}
                         variant="outline"
                         textStyle={{ color: theme.text }}
@@ -95,7 +98,7 @@ export default function SubjectRankingsPage() {
                 </View>
                 <View style={styles.filterBlock}>
                     <Input
-                        placeholder="Subject/Region"
+                        placeholder={i18n.t('subject_region')}
                         placeholderTextColor={theme.textSecondary}
                         value={subjectInput}
                         onChangeText={setSubjectInput}
@@ -155,7 +158,7 @@ export default function SubjectRankingsPage() {
                                                 >
                                                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
                                                         <Text>
-                                                            <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>#{uniIdx + 1} </Text>
+                                                            <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
                                                             <Text style={[
                                                                 styles.universityName,
                                                                 { color: theme.text },
@@ -190,7 +193,7 @@ export default function SubjectRankingsPage() {
                 handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
             >
                 <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
-                    <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Source</Text>
+                    <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_source')}</Text>
                     {sourceItems.map((item, index) => (
                         <TouchableOpacity
                             key={item.value || `key-${index}`}

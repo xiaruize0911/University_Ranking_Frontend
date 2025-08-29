@@ -7,19 +7,25 @@ import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { formatSourceName, formatStatsType } from '../utils/textFormatter';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import i18n from '../lib/i18n';
+import { translateText } from '../lib/api';
 
 export default function GetUniversityDetail(props) {
     // console.log("props: ", props);
     const { theme, isDarkMode, toggleTheme } = useTheme();
+    const { isChinese } = useLanguage();
     const normalized_name = props.route.params.normalized_name;
     // console.log("normalized_name: ", normalized_name);
     const [university, setUniversity] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isFavorite, setIsFavorite] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
+    const [translatedBlurb, setTranslatedBlurb] = useState('');
+    const [translationLoading, setTranslationLoading] = useState(false);
     const navigation = useNavigation();
 
     console.log("Fetching details for normalized_name: ", normalized_name);
@@ -34,13 +40,36 @@ export default function GetUniversityDetail(props) {
                     checkIfFavorite(data);
                 })
                 .catch(err => {
-                    console.error('Error fetching details:', err);
+                    console.error(i18n.t('error_fetching_details') + ':', err);
                     setLoading(false);
                 });
         } else {
             setLoading(false);
         }
     }, [normalized_name]); // Add normalized_name as a dependency
+
+    // Translate blurb when university data is loaded and language is Chinese
+    useEffect(() => {
+        const translateBlurbIfNeeded = async () => {
+            if (university && university.blurb && isChinese) {
+                setTranslationLoading(true);
+                try {
+                    const translated = await translateText(university.blurb, 'en', 'zh-Hans');
+                    setTranslatedBlurb(translated);
+                } catch (error) {
+                    console.error('Translation failed:', error);
+                    setTranslatedBlurb(''); // Clear translated text on error
+                } finally {
+                    setTranslationLoading(false);
+                }
+            } else if (!isChinese) {
+                // Clear translated text when switching back to English
+                setTranslatedBlurb('');
+            }
+        };
+
+        translateBlurbIfNeeded();
+    }, [university, isChinese]); // Re-run when university or language changes
 
     // Check if current university is in favorites
     const checkIfFavorite = async (universityData) => {
@@ -55,7 +84,7 @@ export default function GetUniversityDetail(props) {
                 setIsFavorite(isCurrentFavorite);
             }
         } catch (error) {
-            console.error('Error checking favorites:', error);
+            console.error(i18n.t('error_checking_favorites') + ':', error);
         }
     };
 
@@ -92,7 +121,7 @@ export default function GetUniversityDetail(props) {
 
             await AsyncStorage.setItem('favoriteUniversities', JSON.stringify(favorites));
         } catch (error) {
-            console.error('Error updating favorites:', error);
+            console.error(i18n.t('error_updating_favorites') + ':', error);
         } finally {
             setFavoriteLoading(false);
         }
@@ -102,7 +131,7 @@ export default function GetUniversityDetail(props) {
         return (
             <View style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
-                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading university details...</Text>
+                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_university_details')}</Text>
             </View>
         );
     }
@@ -110,7 +139,7 @@ export default function GetUniversityDetail(props) {
     if (!university) {
         return (
             <View style={[styles.center, { backgroundColor: theme.background }]}>
-                <Text style={[styles.errorText, { color: theme.text }]}>No details found.</Text>
+                <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('no_details_found')}</Text>
             </View>
         );
     }
@@ -155,8 +184,31 @@ export default function GetUniversityDetail(props) {
                     {university.blurb ? (
                         <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
                             <CardContent>
-                                <CardTitle style={{ color: theme.text }}>About</CardTitle>
+                                <CardTitle style={{ color: theme.text }}>{i18n.t('about')}</CardTitle>
                                 <Text style={[styles.blurbText, { color: theme.text }]}>{university.blurb}</Text>
+
+                                {/* Translated text block - only show when Chinese is selected */}
+                                {isChinese && (
+                                    <View style={styles.translationContainer}>
+                                        {translationLoading ? (
+                                            <View style={styles.translationLoading}>
+                                                <ActivityIndicator size="small" color={theme.primary} />
+                                                <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
+                                                    {i18n.t('translating')}...
+                                                </Text>
+                                            </View>
+                                        ) : translatedBlurb ? (
+                                            <View style={styles.translatedBlock}>
+                                                <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
+                                                    中文翻译:
+                                                </Text>
+                                                <Text style={[styles.translatedText, { color: theme.text }]}>
+                                                    {translatedBlurb}
+                                                </Text>
+                                            </View>
+                                        ) : null}
+                                    </View>
+                                )}
                             </CardContent>
                         </Card>
                     ) : null}
@@ -164,12 +216,12 @@ export default function GetUniversityDetail(props) {
                     {university.stats && university.stats.length > 0 && (
                         <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
                             <CardContent>
-                                <CardTitle style={{ color: theme.text }}>Statistics</CardTitle>
+                                <CardTitle style={{ color: theme.text }}>{i18n.t('statistics')}</CardTitle>
                                 <View style={styles.statsGrid}>
                                     {university.stats.map((item, idx) => (
                                         <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
                                             <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
-                                            <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || 'N/A'}</Text>
+                                            <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || i18n.t('not_available')}</Text>
                                         </View>
                                     ))}
                                 </View>
@@ -181,7 +233,7 @@ export default function GetUniversityDetail(props) {
                     {university.rankings && university.rankings.length > 0 && (
                         <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
                             <CardContent>
-                                <CardTitle style={{ color: theme.text }}>Subject Rankings by Source</CardTitle>
+                                <CardTitle style={{ color: theme.text }}>{i18n.t('subject_rankings_by_source')}</CardTitle>
                                 <FlatList
                                     data={(() => {
                                         // Group rankings by source
@@ -213,10 +265,10 @@ export default function GetUniversityDetail(props) {
                                             <View style={styles.sourceRankingContent}>
                                                 <Text style={[styles.sourceText, { color: theme.text }]}>{formatSourceName(item.source)}</Text>
                                                 <Text style={[styles.rankingCountText, { color: theme.textSecondary }]}>
-                                                    {item.count} ranking{item.count !== 1 ? 's' : ''}
+                                                    {item.count} {item.count !== 1 ? i18n.t('rankings') : i18n.t('ranking')}
                                                 </Text>
                                             </View>
-                                            <Text style={[styles.arrowText, { color: theme.primary }]}>→</Text>
+                                            <Text style={[styles.arrowText, { color: theme.primary }]}>{i18n.t('arrow_right')}</Text>
                                         </TouchableOpacity>
                                     )}
                                     scrollEnabled={false}
@@ -291,6 +343,31 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 24,
         marginTop: 12,
+    },
+    translationContainer: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#e0e0e0',
+    },
+    translationLoading: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+    },
+    translationLabel: {
+        fontSize: 14,
+        fontWeight: '500',
+        marginBottom: 8,
+    },
+    translatedBlock: {
+        marginTop: 8,
+    },
+    translatedText: {
+        fontSize: 16,
+        lineHeight: 24,
+        fontStyle: 'italic',
     },
     statsGrid: {
         flexDirection: 'row',

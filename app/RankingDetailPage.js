@@ -5,7 +5,9 @@ import { useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
+import i18n from '../lib/i18n';
 
 export default function RankingDetailPage({ route }) {
     // Expect route.params: { table, source, subject }
@@ -14,6 +16,7 @@ export default function RankingDetailPage({ route }) {
     const [rankingDetail, setRankingDetail] = useState([]);
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
+    const { currentLanguage } = useLanguage();
 
     useEffect(() => {
         async function fetchDetail() {
@@ -22,7 +25,7 @@ export default function RankingDetailPage({ route }) {
             setRankingDetail(detail);
             setLoading(false);
         }
-        console.log("Fetching ranking detail for:", { table, source, subject });
+        // console.log("Fetching ranking detail for:", { table, source, subject });
         fetchDetail();
     }, [table, source, subject]);
 
@@ -30,14 +33,14 @@ export default function RankingDetailPage({ route }) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
-                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading ranking details...</Text>
+                <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_ranking_details')}</Text>
             </GestureHandlerRootView>
         );
     }
 
     return (
         <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <Text style={[styles.title, { color: theme.text }]}>{formatSourceName(source)} - {formatSubjectName(subject)} Rankings</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{formatSourceName(source)} - {formatSubjectName(subject)} {i18n.t('rankings')}</Text>
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
@@ -49,7 +52,7 @@ export default function RankingDetailPage({ route }) {
                         <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                             <CardContent style={styles.cardContent}>
                                 <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
-                                    <Text style={styles.rank}>#{item.rank_value}</Text>
+                                    <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
                                 </View>
                                 <View style={styles.infoContainer}>
                                     <CardTitle style={[styles.name, { color: theme.text }]}>
