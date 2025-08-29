@@ -19,7 +19,7 @@ export default function SearchScreen() {
     const { rankingOptions: subjectRankingOptions = [], loading: rankingsLoading = true } = useRankings();
     const [query, setQuery] = useState('');
     const [country, setCountry] = useState(null);
-    const [sortCredit, setSortCredit] = useState('US_News_best global universities_Rankings');
+    const [sortCredit, setSortCredit] = useState('QS_World_University_Rankings');
     const [countrySearchQuery, setCountrySearchQuery] = useState('');
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -89,8 +89,8 @@ export default function SearchScreen() {
         (async () => {
             // Start with default ranking options
             let searchRankingOptions = [
-                { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
-                { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' }
+                { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' },
+                { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' }
             ];
 
             setRankingOptions(searchRankingOptions);
@@ -153,111 +153,109 @@ export default function SearchScreen() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={[{ flex: 1 }, { backgroundColor: theme.background }]}>
-                <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <View style={[styles.container, { backgroundColor: theme.background }]}>
+                <TextInput
+                    style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+                    placeholder={i18n.t('search_university_here')}
+                    placeholderTextColor={theme.textSecondary}
+                    value={query}
+                    onChangeText={setQuery}
+                />
+
+                <TouchableOpacity
+                    style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                    onPress={handleCountryPress}
+                >
+                    <Text style={[styles.buttonText, { color: theme.text }]}>{country || i18n.t('all_countries')}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                    onPress={handleRankingPress}
+                >
+                    <Text style={[styles.buttonText, { color: theme.text }]}>{selectedRankingLabel}</Text>
+                </TouchableOpacity>
+
+                {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <Animated.View style={{
+                            transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+                            marginBottom: 16,
+                        }}>
+                            <ActivityIndicator size="large" color={theme.primary} />
+                        </Animated.View>
+                        <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        style={styles.resultsList}
+                        data={results}
+                        keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
+                        renderItem={renderUniversityCard}
+                        ListHeaderComponent={<View />}
+                        showsVerticalScrollIndicator={false}
+                    />
+                )}
+            </View>
+
+            <BottomSheetModal
+                ref={countrySheetRef}
+                index={0}
+                snapPoints={snapPoints}
+                enablePanDownToClose={true}
+                backgroundStyle={{ backgroundColor: theme.surface }}
+                handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+                topInset={50}
+            >
+                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_country')}</Text>
                     <TextInput
                         style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                        placeholder={i18n.t('search_university_here')}
+                        placeholder={i18n.t('search_countries')}
                         placeholderTextColor={theme.textSecondary}
-                        value={query}
-                        onChangeText={setQuery}
+                        value={countrySearchQuery}
+                        onChangeText={setCountrySearchQuery}
                     />
+                    {filteredCountryItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={item.value || `key-${index}`}
+                            style={[styles.sheetItem, { borderBottomColor: theme.border }]}
+                            onPress={() => {
+                                setCountry(item.value);
+                                setCountrySearchQuery('');
+                                countrySheetRef.current?.dismiss();
+                            }}
+                        >
+                            <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </BottomSheetScrollView>
+            </BottomSheetModal>
 
-                    <TouchableOpacity
-                        style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                        onPress={handleCountryPress}
-                    >
-                        <Text style={[styles.buttonText, { color: theme.text }]}>{country || i18n.t('all_countries')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                        onPress={handleRankingPress}
-                    >
-                        <Text style={[styles.buttonText, { color: theme.text }]}>{selectedRankingLabel}</Text>
-                    </TouchableOpacity>
-
-                    {isLoading ? (
-                        <View style={styles.loadingContainer}>
-                            <Animated.View style={{
-                                transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
-                                marginBottom: 16,
-                            }}>
-                                <ActivityIndicator size="large" color={theme.primary} />
-                            </Animated.View>
-                            <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
-                        </View>
-                    ) : (
-                        <FlatList
-                            style={styles.resultsList}
-                            data={results}
-                            keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
-                            renderItem={renderUniversityCard}
-                            ListHeaderComponent={<View />}
-                            showsVerticalScrollIndicator={false}
-                        />
-                    )}
-                </View>
-
-                <BottomSheetModal
-                    ref={countrySheetRef}
-                    index={0}
-                    snapPoints={snapPoints}
-                    enablePanDownToClose={true}
-                    backgroundStyle={{ backgroundColor: theme.surface }}
-                    handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
-                    topInset={50}
-                >
-                    <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
-                        <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_country')}</Text>
-                        <TextInput
-                            style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                            placeholder={i18n.t('search_countries')}
-                            placeholderTextColor={theme.textSecondary}
-                            value={countrySearchQuery}
-                            onChangeText={setCountrySearchQuery}
-                        />
-                        {filteredCountryItems.map((item, index) => (
-                            <TouchableOpacity
-                                key={item.value || `key-${index}`}
-                                style={[styles.sheetItem, { borderBottomColor: theme.border }]}
-                                onPress={() => {
-                                    setCountry(item.value);
-                                    setCountrySearchQuery('');
-                                    countrySheetRef.current?.dismiss();
-                                }}
-                            >
-                                <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </BottomSheetScrollView>
-                </BottomSheetModal>
-
-                <BottomSheetModal
-                    ref={rankingSheetRef}
-                    index={0}
-                    snapPoints={snapPoints}
-                    enablePanDownToClose={true}
-                    backgroundStyle={{ backgroundColor: theme.surface }}
-                    handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
-                >
-                    <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
-                        <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
-                        {rankingItems.map((item, index) => (
-                            <TouchableOpacity
-                                key={item.value || `key-${index}`}
-                                style={[styles.sheetItem, { borderBottomColor: theme.border }]}
-                                onPress={() => {
-                                    setSortCredit(item.value);
-                                    rankingSheetRef.current?.dismiss();
-                                }}
-                            >
-                                <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </BottomSheetScrollView>
-                </BottomSheetModal>
-            </SafeAreaView>
+            <BottomSheetModal
+                ref={rankingSheetRef}
+                index={0}
+                snapPoints={snapPoints}
+                enablePanDownToClose={true}
+                backgroundStyle={{ backgroundColor: theme.surface }}
+                handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+            >
+                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
+                    {rankingItems.map((item, index) => (
+                        <TouchableOpacity
+                            key={item.value || `key-${index}`}
+                            style={[styles.sheetItem, { borderBottomColor: theme.border }]}
+                            onPress={() => {
+                                setSortCredit(item.value);
+                                rankingSheetRef.current?.dismiss();
+                            }}
+                        >
+                            <Text style={[styles.sheetItemText, { color: theme.text }]}>{item.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </BottomSheetScrollView>
+            </BottomSheetModal>
         </GestureHandlerRootView>
     );
 }

@@ -29,6 +29,14 @@ export default function RankingDetailPage({ route }) {
         fetchDetail();
     }, [table, source, subject]);
 
+    // Set page title
+    useEffect(() => {
+        const title = `${formatSourceName(source)} - ${formatSubjectName(subject)} ${i18n.t('rankings')}`;
+        navigation.setOptions({
+            title: title,
+        });
+    }, [source, subject, currentLanguage, navigation]);
+
     if (loading) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
@@ -40,7 +48,6 @@ export default function RankingDetailPage({ route }) {
 
     return (
         <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <Text style={[styles.title, { color: theme.text }]}>{formatSourceName(source)} - {formatSubjectName(subject)} {i18n.t('rankings')}</Text>
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
@@ -87,13 +94,6 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 24,
-        textAlign: 'center',
-        lineHeight: 30,
     },
     card: {
         marginBottom: 12,

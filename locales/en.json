@@ -120,5 +120,6 @@
     "language_changed": "Language Changed",
     "restart_app_message": "Please restart the app to apply the language changes",
     "error_translating_text": "Error translating text",
-    "translating": "Translating"
+    "translating": "Translating",
+    "subjects": "Subjects"
 }

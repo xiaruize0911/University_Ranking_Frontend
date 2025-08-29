@@ -297,10 +297,12 @@ export default function MeScreen() {
                 {/* Language Selection Card */}
                 <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                     <CardContent>
-                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                            <Ionicons name="language-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                            {i18n.t('language')}
-                        </CardTitle>
+                        <View style={styles.cardTitleContainer}>
+                            <Ionicons name="language-outline" size={20} color={theme.primary} />
+                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                {i18n.t('language')}
+                            </CardTitle>
+                        </View>
                         <Text style={{ color: theme.textSecondary, marginBottom: 8 }}>
                             {i18n.t('selected_language')}: {isChinese ? i18n.t('chinese') : i18n.t('english')}
                         </Text>
@@ -337,10 +339,12 @@ export default function MeScreen() {
                 {/* Theme Selection Card */}
                 <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                     <CardContent>
-                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                            <Ionicons name="color-palette-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                            {i18n.t('theme_settings')}
-                        </CardTitle>
+                        <View style={styles.cardTitleContainer}>
+                            <Ionicons name="color-palette-outline" size={20} color={theme.primary} />
+                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                {i18n.t('theme_settings')}
+                            </CardTitle>
+                        </View>
                         <Button
                             title={isDarkMode ? i18n.t('switch_to_light') : i18n.t('switch_to_dark')}
                             onPress={handleThemeToggle}
@@ -355,10 +359,12 @@ export default function MeScreen() {
                 <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                     <CardContent>
                         <View style={styles.headerRow}>
-                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                <Ionicons name="heart-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                                {i18n.t('favorite_universities')} ({favoriteUniversities.length})
-                            </CardTitle>
+                            <View style={styles.cardTitleContainer}>
+                                <Ionicons name="heart-outline" size={20} color={theme.primary} />
+                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                    {i18n.t('favorite_universities')} ({favoriteUniversities.length})
+                                </CardTitle>
+                            </View>
                             {favoriteUniversities.length > 0 && (
                                 <TouchableOpacity onPress={clearAllFavorites}>
                                     <Text style={[styles.clearText, { color: theme.primary }]}>{i18n.t('clear_all')}</Text>
@@ -418,10 +424,12 @@ export default function MeScreen() {
                 {/* User Profile Card */}
                 <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                     <CardContent>
-                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                            <Ionicons name="person-outline" size={20} color={theme.primary} style={styles.iconMargin} />
-                            {i18n.t('user_profile')}
-                        </CardTitle>
+                        <View style={styles.cardTitleContainer}>
+                            <Ionicons name="person-outline" size={20} color={theme.primary} />
+                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                {i18n.t('user_profile')}
+                            </CardTitle>
+                        </View>
                         <Text style={[styles.profileDescription, { color: theme.textSecondary }]}>
                             {i18n.t('profile_description')}
                         </Text>
@@ -482,15 +490,16 @@ const styles = StyleSheet.create({
     card: {
         marginVertical: 8,
     },
+    cardTitleContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+        paddingTop: 2,
+    },
     cardTitle: {
         fontSize: 18,
         fontWeight: '600',
-        marginBottom: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    iconMargin: {
-        marginRight: 8,
+        marginLeft: 8,
     },
     themeButton: {
         marginTop: 8,

@@ -120,5 +120,6 @@
     "language_changed": "语言已更改",
     "restart_app_message": "请重启应用以应用语言更改",
     "error_translating_text": "翻译文本时出错",
-    "translating": "翻译中"
+    "translating": "翻译中",
+    "subjects": "学科"
 }

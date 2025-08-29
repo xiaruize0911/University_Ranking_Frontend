@@ -160,139 +160,137 @@ export default function GetUniversityDetail(props) {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-                <ScrollView style={[styles.scrollContainer, { backgroundColor: theme.background }]}>
-                    <Card style={[styles.headerCard, { backgroundColor: theme.surface }]}>
-                        <View style={styles.headerRow}>
-                            <Image
-                                source={{ uri: university.photo }}
-                                style={styles.headerImageInline}
-                                resizeMode="contain"
-                            />
-                            <CardContent style={styles.headerTextContainer}>
-                                <CardTitle style={{ color: theme.text }}>{university.name}</CardTitle>
-                                <CardSubtitle style={{ color: theme.textSecondary }}>
-                                    {university.city + ', \n' + university.country}
-                                </CardSubtitle>
-                            </CardContent>
-                            <TouchableOpacity
-                                style={[styles.favoriteButton, { backgroundColor: theme.surfaceSecondary }]}
-                                onPress={toggleFavorite}
-                                disabled={favoriteLoading}
-                                activeOpacity={0.7}
-                            >
-                                {favoriteLoading ? (
-                                    <ActivityIndicator size="small" color={theme.primary} />
-                                ) : (
-                                    <Ionicons
-                                        name={isFavorite ? "heart" : "heart-outline"}
-                                        size={28}
-                                        color={isFavorite ? "#ff4757" : theme.primary}
-                                    />
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </Card>
-
-                    {/*Blurb block*/}
-                    {university.blurb ? (
-                        <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
-                            <CardContent>
-                                <CardTitle style={{ color: theme.text }}>{i18n.t('about')}</CardTitle>
-                                <Text style={[styles.blurbText, { color: theme.text }]}>{university.blurb}</Text>
-
-                                {/* Translated text block - only show when Chinese is selected */}
-                                {isChinese && (
-                                    <View style={styles.translationContainer}>
-                                        {translationLoading ? (
-                                            <View style={styles.translationLoading}>
-                                                <ActivityIndicator size="small" color={theme.primary} />
-                                                <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
-                                                    {i18n.t('translating')}...
-                                                </Text>
-                                            </View>
-                                        ) : translatedBlurb ? (
-                                            <View style={styles.translatedBlock}>
-                                                <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
-                                                    中文翻译:
-                                                </Text>
-                                                <Text style={[styles.translatedText, { color: theme.text }]}>
-                                                    {translatedBlurb}
-                                                </Text>
-                                            </View>
-                                        ) : null}
-                                    </View>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ) : null}
-                    { /* Stats block */}
-                    {university.stats && university.stats.length > 0 && (
-                        <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
-                            <CardContent>
-                                <CardTitle style={{ color: theme.text }}>{i18n.t('statistics')}</CardTitle>
-                                <View style={styles.statsGrid}>
-                                    {university.stats.map((item, idx) => (
-                                        <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
-                                            <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
-                                            <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || i18n.t('not_available')}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Rankings block */}
-                    {university.rankings && university.rankings.length > 0 && (
-                        <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
-                            <CardContent>
-                                <CardTitle style={{ color: theme.text }}>{i18n.t('subject_rankings_by_source')}</CardTitle>
-                                <FlatList
-                                    data={(() => {
-                                        // Group rankings by source
-                                        const groupedRankings = {};
-                                        university.rankings.forEach(ranking => {
-                                            if (!groupedRankings[ranking.source]) {
-                                                groupedRankings[ranking.source] = [];
-                                            }
-                                            groupedRankings[ranking.source].push(ranking);
-                                        });
-                                        // Convert to array with source names and count
-                                        return Object.keys(groupedRankings).map(source => ({
-                                            source,
-                                            count: groupedRankings[source].length,
-                                            rankings: groupedRankings[source]
-                                        }));
-                                    })()}
-                                    keyExtractor={(item) => item.source}
-                                    renderItem={({ item }) => (
-                                        <TouchableOpacity
-                                            style={[styles.sourceRankingBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]}
-                                            onPress={() => navigation.navigate('UniversitySourceRankingsPage', {
-                                                normalizedName: university.normalized_name,
-                                                universityName: university.name,
-                                                source: item.source
-                                            })}
-                                            activeOpacity={0.8}
-                                        >
-                                            <View style={styles.sourceRankingContent}>
-                                                <Text style={[styles.sourceText, { color: theme.text }]}>{formatSourceName(item.source)}</Text>
-                                                <Text style={[styles.rankingCountText, { color: theme.textSecondary }]}>
-                                                    {item.count} {item.count !== 1 ? i18n.t('rankings') : i18n.t('ranking')}
-                                                </Text>
-                                            </View>
-                                            <Text style={[styles.arrowText, { color: theme.primary }]}>{i18n.t('arrow_right')}</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                    scrollEnabled={false}
+            <ScrollView style={[styles.scrollContainer, { backgroundColor: theme.background }]}>
+                <Card style={[styles.headerCard, { backgroundColor: theme.surface }]}>
+                    <View style={styles.headerRow}>
+                        <Image
+                            source={{ uri: university.photo }}
+                            style={styles.headerImageInline}
+                            resizeMode="contain"
+                        />
+                        <CardContent style={styles.headerTextContainer}>
+                            <CardTitle style={{ color: theme.text }}>{university.name}</CardTitle>
+                            <CardSubtitle style={{ color: theme.textSecondary }}>
+                                {university.city + ', \n' + university.country}
+                            </CardSubtitle>
+                        </CardContent>
+                        <TouchableOpacity
+                            style={[styles.favoriteButton, { backgroundColor: theme.surfaceSecondary }]}
+                            onPress={toggleFavorite}
+                            disabled={favoriteLoading}
+                            activeOpacity={0.7}
+                        >
+                            {favoriteLoading ? (
+                                <ActivityIndicator size="small" color={theme.primary} />
+                            ) : (
+                                <Ionicons
+                                    name={isFavorite ? "heart" : "heart-outline"}
+                                    size={28}
+                                    color={isFavorite ? "#ff4757" : theme.primary}
                                 />
-                            </CardContent>
-                        </Card>
-                    )}
-                    <View style={{ height: 20 }} />
-                </ScrollView>
-            </SafeAreaView>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </Card>
+
+                {/*Blurb block*/}
+                {university.blurb ? (
+                    <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <CardTitle style={{ color: theme.text }}>{i18n.t('about')}</CardTitle>
+                            <Text style={[styles.blurbText, { color: theme.text }]}>{university.blurb}</Text>
+
+                            {/* Translated text block - only show when Chinese is selected */}
+                            {isChinese && (
+                                <View style={styles.translationContainer}>
+                                    {translationLoading ? (
+                                        <View style={styles.translationLoading}>
+                                            <ActivityIndicator size="small" color={theme.primary} />
+                                            <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
+                                                {i18n.t('translating')}...
+                                            </Text>
+                                        </View>
+                                    ) : translatedBlurb ? (
+                                        <View style={styles.translatedBlock}>
+                                            <Text style={[styles.translationLabel, { color: theme.textSecondary }]}>
+                                                中文翻译:
+                                            </Text>
+                                            <Text style={[styles.translatedText, { color: theme.text }]}>
+                                                {translatedBlurb}
+                                            </Text>
+                                        </View>
+                                    ) : null}
+                                </View>
+                            )}
+                        </CardContent>
+                    </Card>
+                ) : null}
+                { /* Stats block */}
+                {university.stats && university.stats.length > 0 && (
+                    <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <CardTitle style={{ color: theme.text }}>{i18n.t('statistics')}</CardTitle>
+                            <View style={styles.statsGrid}>
+                                {university.stats.map((item, idx) => (
+                                    <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
+                                        <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
+                                        <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || i18n.t('not_available')}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Rankings block */}
+                {university.rankings && university.rankings.length > 0 && (
+                    <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <CardTitle style={{ color: theme.text }}>{i18n.t('subject_rankings_by_source')}</CardTitle>
+                            <FlatList
+                                data={(() => {
+                                    // Group rankings by source
+                                    const groupedRankings = {};
+                                    university.rankings.forEach(ranking => {
+                                        if (!groupedRankings[ranking.source]) {
+                                            groupedRankings[ranking.source] = [];
+                                        }
+                                        groupedRankings[ranking.source].push(ranking);
+                                    });
+                                    // Convert to array with source names and count
+                                    return Object.keys(groupedRankings).map(source => ({
+                                        source,
+                                        count: groupedRankings[source].length,
+                                        rankings: groupedRankings[source]
+                                    }));
+                                })()}
+                                keyExtractor={(item) => item.source}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[styles.sourceRankingBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]}
+                                        onPress={() => navigation.navigate('UniversitySourceRankingsPage', {
+                                            normalizedName: university.normalized_name,
+                                            universityName: university.name,
+                                            source: item.source
+                                        })}
+                                        activeOpacity={0.8}
+                                    >
+                                        <View style={styles.sourceRankingContent}>
+                                            <Text style={[styles.sourceText, { color: theme.text }]}>{formatSourceName(item.source)}</Text>
+                                            <Text style={[styles.rankingCountText, { color: theme.textSecondary }]}>
+                                                {item.count} {item.count !== 1 ? i18n.t('rankings') : i18n.t('ranking')}
+                                            </Text>
+                                        </View>
+                                        <Text style={[styles.arrowText, { color: theme.primary }]}>{i18n.t('arrow_right')}</Text>
+                                    </TouchableOpacity>
+                                )}
+                                scrollEnabled={false}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
+                <View style={{ height: 20 }} />
+            </ScrollView>
         </GestureHandlerRootView>
     );
 }

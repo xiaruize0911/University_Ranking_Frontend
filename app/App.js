@@ -242,7 +242,7 @@ function AppContent() {
 							component={SubjectRankings}
 							options={{
 								headerShown: false,
-								tabBarLabel: i18n.t('rankings_of_subjects_regions'),
+								tabBarLabel: i18n.t('subjects'),
 								tabBarIcon: ({ color, size }) => (
 									<Ionicons name="list-outline" size={size} color={color} />
 								),

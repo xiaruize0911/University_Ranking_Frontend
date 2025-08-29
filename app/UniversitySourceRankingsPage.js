@@ -59,55 +59,36 @@ export default function UniversitySourceRankingsPage({ route }) {
 
     return (
         <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <SafeAreaView style={{ flex: 1 }}>
-                <FlatList
-                    data={rankingData.rankings}
-                    keyExtractor={(item, idx) => `${item.subject}-${idx}`}
-                    ListHeaderComponent={renderHeader}
-                    renderItem={({ item }) => (
-                        <Card style={[styles.rankingCard, { backgroundColor: theme.surface }]}>
-                            <CardContent style={styles.cardContent}>
-                                <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
-                                    <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
-                                </View>
-                                <View style={styles.infoContainer}>
-                                    <CardTitle style={[styles.subjectText, { color: theme.text }]}>
-                                        {formatSubjectName(item.subject)}
-                                    </CardTitle>
-                                </View>
-                            </CardContent>
-                        </Card>
-                    )}
-                    ListEmptyComponent={
-                        <Card style={[styles.emptyCard, { backgroundColor: theme.surface }]}>
-                            <CardContent>
-                                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                                    {i18n.t('no_rankings_available')} {formatSourceName(source)}
-                                </Text>
-                            </CardContent>
-                        </Card>
-                    }
-                    contentContainerStyle={styles.listContainer}
-                    showsVerticalScrollIndicator={false}
-                />
-
-                {/* Floating Theme Toggle Button */}
-                <TouchableOpacity
-                    style={[
-                        styles.floatingThemeButton,
-                        {
-                            backgroundColor: theme.surface,
-                            borderColor: theme.border
-                        }
-                    ]}
-                    onPress={toggleTheme}
-                    activeOpacity={0.8}
-                >
-                    <Text style={[styles.themeButtonText, { color: theme.text }]}>
-                        {isDarkMode ? '☀️' : '🌙'}
-                    </Text>
-                </TouchableOpacity>
-            </SafeAreaView>
+            <FlatList
+                data={rankingData.rankings}
+                keyExtractor={(item, idx) => `${item.subject}-${idx}`}
+                ListHeaderComponent={renderHeader}
+                renderItem={({ item }) => (
+                    <Card style={[styles.rankingCard, { backgroundColor: theme.surface }]}>
+                        <CardContent style={styles.cardContent}>
+                            <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
+                                <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
+                            </View>
+                            <View style={styles.infoContainer}>
+                                <CardTitle style={[styles.subjectText, { color: theme.text }]}>
+                                    {formatSubjectName(item.subject)}
+                                </CardTitle>
+                            </View>
+                        </CardContent>
+                    </Card>
+                )}
+                ListEmptyComponent={
+                    <Card style={[styles.emptyCard, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                                {i18n.t('no_rankings_available')} {formatSourceName(source)}
+                            </Text>
+                        </CardContent>
+                    </Card>
+                }
+                contentContainerStyle={styles.listContainer}
+                showsVerticalScrollIndicator={false}
+            />
         </GestureHandlerRootView>
     );
 }
