@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FlatList, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,6 +12,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
 import i18n from '../lib/i18n';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SubjectRankingsPage() {
     const navigation = useNavigation();
@@ -23,6 +24,8 @@ export default function SubjectRankingsPage() {
     const [selectedSource, setSelectedSource] = useState(null);
     const [sourceItems, setSourceItems] = useState([]);
     const [subjectInput, setSubjectInput] = useState('');
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
 
     // Bottom sheet for source selection only
     const sourceBottomSheetRef = useRef(null);
@@ -42,6 +45,21 @@ export default function SubjectRankingsPage() {
 
     // Source selection handler
     const handleSourcePress = useCallback(() => {
+        sourceBottomSheetRef.current?.present();
+    }, []);
+
+    const handleSearchIconPress = useCallback(() => {
+        setIsSearchExpanded(!isSearchExpanded);
+        setShowFilterMenu(false); // Close filter menu when opening search
+    }, [isSearchExpanded]);
+
+    const handleFiltersIconPress = useCallback(() => {
+        setShowFilterMenu(!showFilterMenu);
+        setIsSearchExpanded(false); // Close search when opening filter menu
+    }, [showFilterMenu]);
+
+    const handleSourceFilterPress = useCallback(() => {
+        setShowFilterMenu(false);
         sourceBottomSheetRef.current?.present();
     }, []);
 
@@ -69,119 +87,150 @@ export default function SubjectRankingsPage() {
 
     if (loading) {
         return (
-            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+            <SafeAreaView style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
                 <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_rankings')}</Text>
-            </GestureHandlerRootView>
+            </SafeAreaView>
         );
     }
 
     if (error) {
         return (
-            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+            <SafeAreaView style={[styles.center, { backgroundColor: theme.background }]}>
                 <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('error_loading_rankings')}</Text>
-            </GestureHandlerRootView>
+            </SafeAreaView>
         );
     }
 
     return (
-        <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
-            <View style={styles.filterRow}>
-                <View style={[styles.filterBlock]}>
-                    <Button
-                        title={selectedSource ? formatSourceName(selectedSource) : i18n.t('select_source')}
-                        onPress={handleSourcePress}
-                        variant="outline"
-                        textStyle={{ color: theme.text }}
-                        style={{ backgroundColor: theme.surface, borderColor: theme.border }}
-                    />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+                {/* Header */}
+                <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <View style={styles.headerLeft}>
+                        <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('rankings_of_subjects_regions')}</Text>
+                    </View>
+                    <View style={styles.headerRight}>
+                        <TouchableOpacity
+                            style={styles.headerIcon}
+                            onPress={handleSearchIconPress}
+                        >
+                            <Ionicons name="search" size={24} color={theme.text} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.headerIcon}
+                            onPress={handleFiltersIconPress}
+                        >
+                            <Ionicons name="filter" size={24} color={theme.text} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <View style={styles.filterBlock}>
-                    <Input
-                        placeholder={i18n.t('subject_region')}
-                        placeholderTextColor={theme.textSecondary}
-                        value={subjectInput}
-                        onChangeText={setSubjectInput}
-                        textStyle={{ color: theme.text }}
-                        style={{ backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }}
-                    />
-                </View>
-            </View>
 
-            <FlatList
-                style={{ marginTop: 10 }}
-                data={filteredRankings}
-                keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        onPress={() => {
-                            navigation.navigate('RankingDetailPage', {
-                                table: item.table,
-                                source: item.source,
-                                subject: item.subject
-                            });
-                        }}
-                        activeOpacity={0.8}
-                    >
-                        <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                            <CardContent>
-                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                    {formatSourceName(item.source)} - {formatSubjectName(item.subject)}
-                                </CardTitle>
-                                {item.top_universities && item.top_universities.length > 0 && (
-                                    <View style={[styles.topUContainer, { flexDirection: direction }]}>
-                                        {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
-                                            <TouchableOpacity
-                                                key={uni.name || uniIdx}
-                                                onPress={() => navigation.navigate('DetailPage', { normalized_name: uni.normalized_name, name: uni.name })}
-                                                activeOpacity={0.7}
-                                            >
-                                                <View
-                                                    style={[
-                                                        styles.top_u_block,
-                                                        {
-                                                            backgroundColor: theme.surfaceSecondary,
-                                                            borderLeftColor: theme.primary,
-                                                        },
-                                                        direction === 'row'
-                                                            ? {
-                                                                width: (dimensions.window.width - 80) / 3,
-                                                                height: (dimensions.window.width - 80) / 3,
-                                                                flex: 0
-                                                            }
-                                                            : {
-                                                                width: dimensions.window.width - 80,
-                                                                alignSelf: 'center',
-                                                                marginBottom: 8
-                                                            }
-                                                    ]}
-                                                >
-                                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
-                                                        <Text>
-                                                            <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
-                                                            <Text style={[
-                                                                styles.universityName,
-                                                                { color: theme.text },
+                {/* Filter Menu */}
+                {showFilterMenu && (
+                    <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                        <TouchableOpacity
+                            style={styles.filterMenuItem}
+                            onPress={handleSourceFilterPress}
+                        >
+                            <Ionicons name="school" size={20} color={theme.text} />
+                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_source')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {/* Expandable Search Input */}
+                {isSearchExpanded && (
+                    <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                        <TextInput
+                            style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+                            placeholder={i18n.t('subject_region')}
+                            placeholderTextColor={theme.textSecondary}
+                            value={subjectInput}
+                            onChangeText={setSubjectInput}
+                            autoFocus={true}
+                        />
+                    </View>
+                )}
+
+                {/* Main Content */}
+                <View style={styles.content}>
+                    <FlatList
+                        style={{ marginTop: 10 }}
+                        data={filteredRankings}
+                        keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.navigate('RankingDetailPage', {
+                                        table: item.table,
+                                        source: item.source,
+                                        subject: item.subject
+                                    });
+                                }}
+                                activeOpacity={0.8}
+                            >
+                                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                                    <CardContent>
+                                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                            {formatSourceName(item.source)} - {formatSubjectName(item.subject)}
+                                        </CardTitle>
+                                        {item.top_universities && item.top_universities.length > 0 && (
+                                            <View style={[styles.topUContainer, { flexDirection: direction }]}>
+                                                {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
+                                                    <TouchableOpacity
+                                                        key={uni.name || uniIdx}
+                                                        onPress={() => navigation.navigate('DetailPage', { normalized_name: uni.normalized_name, name: uni.name })}
+                                                        activeOpacity={0.7}
+                                                    >
+                                                        <View
+                                                            style={[
+                                                                styles.top_u_block,
+                                                                {
+                                                                    backgroundColor: theme.surfaceSecondary,
+                                                                    borderLeftColor: theme.primary,
+                                                                },
                                                                 direction === 'row'
-                                                                    ? { fontSize: 12, lineHeight: 14 }
-                                                                    : { fontSize: 14, lineHeight: 18 }
-                                                            ]}>
-                                                                {uni.name ? uni.name : uni.normalized_name}
-                                                            </Text>
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TouchableOpacity>
-                )
-                }
-                ListHeaderComponent={< View />}
-            />
+                                                                    ? {
+                                                                        width: (dimensions.window.width - 80) / 3,
+                                                                        height: (dimensions.window.width - 80) / 3,
+                                                                        flex: 0
+                                                                    }
+                                                                    : {
+                                                                        width: dimensions.window.width - 80,
+                                                                        alignSelf: 'center',
+                                                                        marginBottom: 8
+                                                                    }
+                                                            ]}
+                                                        >
+                                                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
+                                                                <Text>
+                                                                    <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
+                                                                    <Text style={[
+                                                                        styles.universityName,
+                                                                        { color: theme.text },
+                                                                        direction === 'row'
+                                                                            ? { fontSize: 12, lineHeight: 14 }
+                                                                            : { fontSize: 14, lineHeight: 18 }
+                                                                    ]}>
+                                                                        {uni.name ? uni.name : uni.normalized_name}
+                                                                    </Text>
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TouchableOpacity>
+                        )
+                        }
+                        ListHeaderComponent={< View />}
+                    />
+                </View>
+            </SafeAreaView>
 
             {/* Source Selection Bottom Sheet Modal */}
             <BottomSheetModal
@@ -215,7 +264,58 @@ export default function SubjectRankingsPage() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+    },
+    headerLeft: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerIcon: {
+        padding: 8,
+        marginLeft: 8,
+    },
+    filterMenu: {
+        borderBottomWidth: 1,
+    },
+    filterMenuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    filterMenuText: {
+        fontSize: 16,
+        marginLeft: 12,
+    },
+    searchContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+    },
+    input: {
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+        fontSize: 16,
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: 16,
     },
     center: {
         flex: 1,

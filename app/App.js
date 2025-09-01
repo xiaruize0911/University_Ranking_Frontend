@@ -1,29 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
-
-// Conditionally import AdMob only for native platforms
-let mobileAds;
-if (Platform.OS !== 'web') {
-	try {
-		// Only import if not in Expo Go environment
-		const isExpoGo = Constants.appOwnership === 'expo';
-
-		if (!isExpoGo) {
-			mobileAds = require('react-native-google-mobile-ads').default;
-		} else {
-			console.log('Running in Expo Go - AdMob not available');
-		}
-	} catch (error) {
-		console.warn('Google Mobile Ads not available:', error);
-	}
-}
 import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
@@ -70,6 +51,7 @@ function HomeScreen() {
 			<Stack.Screen
 				name={i18n.t('college_rankings')}
 				component={SearchScreen}
+				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name="DetailPage"
@@ -107,6 +89,7 @@ function SubjectRankings() {
 			<Stack.Screen
 				name={i18n.t('rankings_of_subjects_regions')}
 				component={SubjectRankingsPage}
+				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name="RankingDetailPage"
@@ -172,31 +155,6 @@ function MeScreenStack() {
 
 function AppContent() {
 	const { theme } = useTheme();
-
-	useEffect(() => {
-		// Initialize Google Mobile Ads
-		const initializeAds = async () => {
-			// ADS DISABLED: Uncomment the code below to enable AdMob
-			/*
-			if (Platform.OS !== 'web' && mobileAds) {
-				try {
-					console.log('Initializing Google Mobile Ads...');
-					await mobileAds().initialize();
-					console.log('Google Mobile Ads initialized successfully');
-				} catch (error) {
-					console.error('Failed to initialize Google Mobile Ads:', error);
-				}
-			} else if (Platform.OS === 'web') {
-				console.log('Web platform detected, skipping AdMob initialization');
-			} else {
-				console.log('Google Mobile Ads module not available');
-			}
-			*/
-			console.log('AdMob initialization disabled');
-		};
-
-		initializeAds();
-	}, []);
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>

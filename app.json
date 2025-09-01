@@ -42,14 +42,6 @@
       "description": "University ranking and comparison app",
       "manifest": "./public/manifest.json"
     },
-    "plugins": [
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-7131261041467249~6343955955",
-          "iosAppId": "ca-app-pub-7131261041467249~8877817628"
-        }
-      ]
-    ]
+    "plugins": []
   }
 }

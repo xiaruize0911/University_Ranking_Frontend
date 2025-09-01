@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import i18n from '../lib/i18n';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SearchScreen() {
     // Animated spinner for loading
@@ -24,6 +25,8 @@ export default function SearchScreen() {
     const [results, setResults] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [allCountries, setAllCountries] = useState([]);
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [rankingOptions, setRankingOptions] = useState([
         { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
         { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' }
@@ -125,6 +128,28 @@ export default function SearchScreen() {
         rankingSheetRef.current?.present();
     }, []);
 
+    const handleSearchIconPress = useCallback(() => {
+        setIsSearchExpanded(!isSearchExpanded);
+        setShowFilterMenu(false); // Close filter menu when opening search
+    }, [isSearchExpanded]);
+
+    const handleFiltersIconPress = useCallback(() => {
+        setShowFilterMenu(!showFilterMenu);
+    }, [showFilterMenu]);
+
+    const handleCountryFilterPress = useCallback(() => {
+        setShowFilterMenu(false);
+        setCountrySearchQuery('');
+        rankingSheetRef.current?.dismiss();
+        countrySheetRef.current?.present();
+    }, []);
+
+    const handleRankingFilterPress = useCallback(() => {
+        setShowFilterMenu(false);
+        countrySheetRef.current?.dismiss();
+        rankingSheetRef.current?.present();
+    }, []);
+
     // Find the label for the current sortCredit value
     const selectedRankingLabel = useMemo(() => {
         const found = rankingItems.find(item => item.value === sortCredit);
@@ -153,50 +178,86 @@ export default function SearchScreen() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={[styles.container, { backgroundColor: theme.background }]}>
-                <TextInput
-                    style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                    placeholder={i18n.t('search_university_here')}
-                    placeholderTextColor={theme.textSecondary}
-                    value={query}
-                    onChangeText={setQuery}
-                />
-
-                <TouchableOpacity
-                    style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                    onPress={handleCountryPress}
-                >
-                    <Text style={[styles.buttonText, { color: theme.text }]}>{country || i18n.t('all_countries')}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.button, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                    onPress={handleRankingPress}
-                >
-                    <Text style={[styles.buttonText, { color: theme.text }]}>{selectedRankingLabel}</Text>
-                </TouchableOpacity>
-
-                {isLoading ? (
-                    <View style={styles.loadingContainer}>
-                        <Animated.View style={{
-                            transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
-                            marginBottom: 16,
-                        }}>
-                            <ActivityIndicator size="large" color={theme.primary} />
-                        </Animated.View>
-                        <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+                {/* Header */}
+                <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <View style={styles.headerLeft}>
+                        <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('college_rankings')}</Text>
                     </View>
-                ) : (
-                    <FlatList
-                        style={styles.resultsList}
-                        data={results}
-                        keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
-                        renderItem={renderUniversityCard}
-                        ListHeaderComponent={<View />}
-                        showsVerticalScrollIndicator={false}
-                    />
+                    <View style={styles.headerRight}>
+                        <TouchableOpacity
+                            style={styles.headerIcon}
+                            onPress={handleSearchIconPress}
+                        >
+                            <Ionicons name="search" size={24} color={theme.text} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.headerIcon}
+                            onPress={handleFiltersIconPress}
+                        >
+                            <Ionicons name="filter" size={24} color={theme.text} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Filter Menu */}
+                {showFilterMenu && (
+                    <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                        <TouchableOpacity
+                            style={[styles.filterMenuItem, { borderBottomColor: theme.border }]}
+                            onPress={handleCountryFilterPress}
+                        >
+                            <Ionicons name="flag" size={20} color={theme.text} />
+                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_country')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.filterMenuItem}
+                            onPress={handleRankingFilterPress}
+                        >
+                            <Ionicons name="trophy" size={20} color={theme.text} />
+                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
-            </View>
+
+                {/* Expandable Search Input */}
+                {isSearchExpanded && (
+                    <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                        <TextInput
+                            style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+                            placeholder={i18n.t('search_university_here')}
+                            placeholderTextColor={theme.textSecondary}
+                            value={query}
+                            onChangeText={setQuery}
+                            autoFocus={true}
+                        />
+                    </View>
+                )}
+
+                {/* Main Content */}
+                <View style={styles.content}>
+                    {isLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <Animated.View style={{
+                                transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+                                marginBottom: 16,
+                            }}>
+                                <ActivityIndicator size="large" color={theme.primary} />
+                            </Animated.View>
+                            <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            style={styles.resultsList}
+                            data={results}
+                            keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
+                            renderItem={renderUniversityCard}
+                            ListHeaderComponent={<View />}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    )}
+                </View>
+            </SafeAreaView>
 
             <BottomSheetModal
                 ref={countrySheetRef}
@@ -268,8 +329,53 @@ const styles = StyleSheet.create({
         paddingTop: 40,
     },
     container: {
-        padding: 16,
         flex: 1,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+    },
+    headerLeft: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerIcon: {
+        padding: 8,
+        marginLeft: 8,
+    },
+    filterMenu: {
+        borderBottomWidth: 1,
+    },
+    filterMenuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 0.5,
+    },
+    filterMenuText: {
+        fontSize: 16,
+        marginLeft: 12,
+    },
+    searchContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: 16,
     },
     floatingThemeButton: {
         position: 'absolute',
