@@ -165,7 +165,7 @@ function AppContent() {
 							tabBarActiveTintColor: theme.primary,
 							tabBarInactiveTintColor: theme.textSecondary,
 							tabBarStyle: {
-								backgroundColor: theme.surface,
+								backgroundColor: theme.background,
 								borderTopColor: theme.border,
 								borderTopWidth: 1,
 								paddingBottom: 5,

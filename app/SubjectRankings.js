@@ -40,7 +40,7 @@ export default function SubjectRankingsPage() {
     // Filtered rankings to display
     const filteredRankings = rankingOptions.filter(opt =>
         (!selectedSource || opt.source === selectedSource) &&
-        (!subjectInput || (opt.subject && opt.subject.toLowerCase().includes(subjectInput.toLowerCase())))
+        (!subjectInput || (opt.subject && (opt.subject.toLowerCase().includes(subjectInput.toLowerCase()))) || (opt.subject && (opt.subject.toLowerCase().replace('_', ' ').includes(subjectInput.toLowerCase()))))
     );
 
     // Source selection handler
@@ -156,9 +156,10 @@ export default function SubjectRankingsPage() {
                 {/* Main Content */}
                 <View style={styles.content}>
                     <FlatList
-                        style={{ marginTop: 10 }}
+                        style={{ marginTop: 0 }}
                         data={filteredRankings}
                         keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
+                        showsVerticalScrollIndicator={false}
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => {

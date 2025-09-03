@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
+import { formatSourceName, formatSubjectName, formatDisplayText, formatUniversityName } from '../utils/textFormatter';
 import i18n from '../lib/i18n';
 
 export default function RankingDetailPage({ route }) {
@@ -63,7 +63,7 @@ export default function RankingDetailPage({ route }) {
                                 </View>
                                 <View style={styles.infoContainer}>
                                     <CardTitle style={[styles.name, { color: theme.text }]}>
-                                        {item.name || item.normalized_name}
+                                        {formatUniversityName(item.name || item.normalized_name)}
                                     </CardTitle>
                                     {item.country && (
                                         <CardSubtitle style={[styles.country, { color: theme.textSecondary }]}>

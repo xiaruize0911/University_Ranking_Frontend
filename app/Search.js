@@ -180,7 +180,7 @@ export default function SearchScreen() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
                 {/* Header */}
-                <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
                     <View style={styles.headerLeft}>
                         <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('college_rankings')}</Text>
                     </View>
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 8,
         borderBottomWidth: 1,
     },
     headerLeft: {
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
     },
     floatingThemeButton: {
         position: 'absolute',
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
     },
     resultsList: {
-        marginTop: 8,
+        // marginTop: 8,
     },
     universityCard: {
         borderWidth: 1,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     cardRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
+        padding: 12,
     },
     rankContainer: {
         marginRight: 12,
@@ -458,8 +458,8 @@ const styles = StyleSheet.create({
     },
     sheetContainer: {
         flex: 1,
-        padding: 16,
-        paddingBottom: 100,
+        // padding: 16,
+        // paddingBottom: 100,
     },
     sheetTitle: {
         fontSize: 18,
