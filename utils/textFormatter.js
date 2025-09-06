@@ -29,7 +29,7 @@ export function formatUniversityName(text) {
     if (!text || typeof text !== 'string') {
         return text;
     }
-    return merge(text.split(' ').map(word => { return word[0].toUpperCase() + word.slice(1).toLowerCase() }).join(' '));
+    return text.split(' ').map(word => { return word[0].toUpperCase() + word.slice(1).toLowerCase() }).join(' ');
 }
 
 /**
