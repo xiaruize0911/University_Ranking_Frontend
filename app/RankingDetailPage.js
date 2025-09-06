@@ -6,7 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { formatSourceName, formatSubjectName, formatDisplayText, formatUniversityName } from '../utils/textFormatter';
+import { formatSourceName, formatSubjectName, formatDisplayText } from '../utils/textFormatter';
+import { getUniversityName } from '../lib/universityNameTranslations';
 import i18n from '../lib/i18n';
 
 export default function RankingDetailPage({ route }) {
@@ -51,30 +52,33 @@ export default function RankingDetailPage({ route }) {
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name, name: item.name })}
-                        activeOpacity={0.8}
-                    >
-                        <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                            <CardContent style={styles.cardContent}>
-                                <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
-                                    <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
-                                </View>
-                                <View style={styles.infoContainer}>
-                                    <CardTitle style={[styles.name, { color: theme.text }]}>
-                                        {formatUniversityName(item.name || item.normalized_name)}
-                                    </CardTitle>
-                                    {item.country && (
-                                        <CardSubtitle style={[styles.country, { color: theme.textSecondary }]}>
-                                            {item.country}
-                                        </CardSubtitle>
-                                    )}
-                                </View>
-                            </CardContent>
-                        </Card>
-                    </TouchableOpacity>
-                )}
+                renderItem={({ item }) => {
+                    const displayName = getUniversityName(item.normalized_name, currentLanguage);
+                    return (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name, name: displayName })}
+                            activeOpacity={0.8}
+                        >
+                            <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                                <CardContent style={styles.cardContent}>
+                                    <View style={[styles.rankContainer, { backgroundColor: theme.primary }]}>
+                                        <Text style={styles.rank}>{i18n.t('rank_prefix')}{item.rank_value}</Text>
+                                    </View>
+                                    <View style={styles.infoContainer}>
+                                        <CardTitle style={[styles.name, { color: theme.text }]}>
+                                            {displayName}
+                                        </CardTitle>
+                                        {item.country && (
+                                            <CardSubtitle style={[styles.country, { color: theme.textSecondary }]}>
+                                                {item.country}
+                                            </CardSubtitle>
+                                        )}
+                                    </View>
+                                </CardContent>
+                            </Card>
+                        </TouchableOpacity>
+                    );
+                }}
                 showsVerticalScrollIndicator={false}
             />
         </GestureHandlerRootView>

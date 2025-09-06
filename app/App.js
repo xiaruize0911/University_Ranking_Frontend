@@ -17,6 +17,8 @@ import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { RankingsProvider } from '../contexts/RankingsContext';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import i18n from '../lib/i18n';
+import { getAllUniversityNameTranslations } from '../lib/api';
+import { setUniversityNameTranslations } from '../lib/universityNameTranslations';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -224,7 +226,18 @@ function AppContent() {
 	);
 }
 
+
+// Fetch and cache university name translations at app startup
+function useInitUniversityNameTranslations() {
+	React.useEffect(() => {
+		getAllUniversityNameTranslations()
+			.then(setUniversityNameTranslations)
+			.catch(e => console.warn('Failed to fetch university name translations', e));
+	}, []);
+}
+
 export default function App() {
+	useInitUniversityNameTranslations();
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>

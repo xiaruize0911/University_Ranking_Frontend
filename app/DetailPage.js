@@ -10,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { formatSourceName, formatStatsType } from '../utils/textFormatter';
+import { getUniversityName } from '../lib/universityNameTranslations';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import i18n from '../lib/i18n';
 import { translateText } from '../lib/api';
@@ -27,6 +28,7 @@ export default function GetUniversityDetail(props) {
     const [translatedBlurb, setTranslatedBlurb] = useState('');
     const [translationLoading, setTranslationLoading] = useState(false);
     const navigation = useNavigation();
+    const { currentLanguage } = useLanguage();
 
     console.log("Fetching details for normalized_name: ", normalized_name);
 
@@ -169,7 +171,7 @@ export default function GetUniversityDetail(props) {
                             resizeMode="contain"
                         />
                         <CardContent style={styles.headerTextContainer}>
-                            <CardTitle style={{ color: theme.text }}>{university.name}</CardTitle>
+                            <CardTitle style={{ color: theme.text }}>{getUniversityName(university.normalized_name, currentLanguage)}</CardTitle>
                             <CardSubtitle style={{ color: theme.textSecondary }}>
                                 {university.city + ', \n' + university.country}
                             </CardSubtitle>

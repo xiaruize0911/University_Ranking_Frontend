@@ -8,6 +8,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import i18n from '../lib/i18n';
+import { getUniversityName } from '../lib/universityNameTranslations';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SearchScreen() {
@@ -156,25 +157,28 @@ export default function SearchScreen() {
         return found ? found.label : i18n.t('sort_by');
     }, [rankingItems, sortCredit]);
 
-    const renderUniversityCard = ({ item, index }) => (
-        <TouchableOpacity
-            style={[styles.universityCard, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={() => navigation.navigate('DetailPage', {
-                normalized_name: item.normalized_name,
-                name: item.name
-            })}
-        >
-            <View style={styles.cardRow}>
-                <View style={styles.rankContainer}>
-                    <Text style={[styles.rankText, { color: theme.primary }]}>{i18n.t('rank_prefix')}{index + 1}</Text>
+    const renderUniversityCard = ({ item, index }) => {
+        const displayName = getUniversityName(item.normalized_name, currentLanguage);
+        return (
+            <TouchableOpacity
+                style={[styles.universityCard, { backgroundColor: theme.card, borderColor: theme.border }]}
+                onPress={() => navigation.navigate('DetailPage', {
+                    normalized_name: item.normalized_name,
+                    name: displayName
+                })}
+            >
+                <View style={styles.cardRow}>
+                    <View style={styles.rankContainer}>
+                        <Text style={[styles.rankText, { color: theme.primary }]}>{i18n.t('rank_prefix')}{index + 1}</Text>
+                    </View>
+                    <View style={styles.cardContent}>
+                        <Text style={[styles.cardTitle, { color: theme.text }]}>{displayName}</Text>
+                        <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>{item.city}, {item.country}</Text>
+                    </View>
                 </View>
-                <View style={styles.cardContent}>
-                    <Text style={[styles.cardTitle, { color: theme.text }]}>{item.name}</Text>
-                    <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>{item.city}, {item.country}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>

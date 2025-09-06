@@ -11,6 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
+import { getUniversityName } from '../lib/universityNameTranslations';
 import i18n from '../lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -178,49 +179,52 @@ export default function SubjectRankingsPage() {
                                         </CardTitle>
                                         {item.top_universities && item.top_universities.length > 0 && (
                                             <View style={[styles.topUContainer, { flexDirection: direction }]}>
-                                                {item.top_universities.slice(0, 3).map((uni, uniIdx) => (
-                                                    <TouchableOpacity
-                                                        key={uni.name || uniIdx}
-                                                        onPress={() => navigation.navigate('DetailPage', { normalized_name: uni.normalized_name, name: uni.name })}
-                                                        activeOpacity={0.7}
-                                                    >
-                                                        <View
-                                                            style={[
-                                                                styles.top_u_block,
-                                                                {
-                                                                    backgroundColor: theme.surfaceSecondary,
-                                                                    borderLeftColor: theme.primary,
-                                                                },
-                                                                direction === 'row'
-                                                                    ? {
-                                                                        width: (dimensions.window.width - 80) / 3,
-                                                                        height: (dimensions.window.width - 80) / 3,
-                                                                        flex: 0
-                                                                    }
-                                                                    : {
-                                                                        width: dimensions.window.width - 80,
-                                                                        alignSelf: 'center',
-                                                                        marginBottom: 8
-                                                                    }
-                                                            ]}
+                                                {item.top_universities.slice(0, 3).map((uni, uniIdx) => {
+                                                    const displayName = getUniversityName(uni.normalized_name, currentLanguage);
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={uni.normalized_name || uniIdx}
+                                                            onPress={() => navigation.navigate('DetailPage', { normalized_name: uni.normalized_name, name: displayName })}
+                                                            activeOpacity={0.7}
                                                         >
-                                                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
-                                                                <Text>
-                                                                    <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
-                                                                    <Text style={[
-                                                                        styles.universityName,
-                                                                        { color: theme.text },
-                                                                        direction === 'row'
-                                                                            ? { fontSize: 12, lineHeight: 14 }
-                                                                            : { fontSize: 14, lineHeight: 18 }
-                                                                    ]}>
-                                                                        {uni.name ? uni.name : uni.normalized_name}
+                                                            <View
+                                                                style={[
+                                                                    styles.top_u_block,
+                                                                    {
+                                                                        backgroundColor: theme.surfaceSecondary,
+                                                                        borderLeftColor: theme.primary,
+                                                                    },
+                                                                    direction === 'row'
+                                                                        ? {
+                                                                            width: (dimensions.window.width - 80) / 3,
+                                                                            height: (dimensions.window.width - 80) / 3,
+                                                                            flex: 0
+                                                                        }
+                                                                        : {
+                                                                            width: dimensions.window.width - 80,
+                                                                            alignSelf: 'center',
+                                                                            marginBottom: 8
+                                                                        }
+                                                                ]}
+                                                            >
+                                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
+                                                                    <Text>
+                                                                        <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
+                                                                        <Text style={[
+                                                                            styles.universityName,
+                                                                            { color: theme.text },
+                                                                            direction === 'row'
+                                                                                ? { fontSize: 12, lineHeight: 14 }
+                                                                                : { fontSize: 14, lineHeight: 18 }
+                                                                        ]}>
+                                                                            {displayName}
+                                                                        </Text>
                                                                     </Text>
-                                                                </Text>
+                                                                </View>
                                                             </View>
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                ))}
+                                                        </TouchableOpacity>
+                                                    );
+                                                })}
                                             </View>
                                         )}
                                     </CardContent>
