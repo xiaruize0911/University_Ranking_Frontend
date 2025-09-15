@@ -66,8 +66,8 @@ export default function SearchScreen() {
 
                 const cleaned = data.map(u => ({
                     ...u,
-                    country: u.country || i18n.t('not_available'),
-                    city: u.city || i18n.t('not_available')
+                    country: u.country || '',
+                    city: u.city || ''
                 }));
                 setResults(cleaned);
             } catch (error) {
@@ -173,7 +173,7 @@ export default function SearchScreen() {
                     </View>
                     <View style={styles.cardContent}>
                         <Text style={[styles.cardTitle, { color: theme.text }]}>{displayName}</Text>
-                        <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>{item.city}, {item.country}</Text>
+                        {item.country != '' && <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>{item.city != '' ? item.city : ''}{item.country != '' ? ', ' + item.country : ''}</Text>}
                     </View>
                 </View>
             </TouchableOpacity>
@@ -437,6 +437,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 12,
+        height: 70
     },
     rankContainer: {
         marginRight: 12,

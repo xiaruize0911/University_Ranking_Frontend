@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import * as Localization from 'expo-localization';
-import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Alert, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Text, View, TouchableOpacity, Alert, Platform, SafeAreaView } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
@@ -29,131 +28,102 @@ export default function MeScreen() {
     const [languageChanged, setLanguageChanged] = useState(false);
 
     // Load user profile and favorites on initial mount
+    const loadUserProfile = useCallback(async () => {
+        try {
+            if (Platform.OS === 'web') {
+                // Use localStorage for web
+                const profileData = window.localStorage.getItem('userProfile');
+                if (profileData) {
+                    const profile = JSON.parse(profileData);
+                    setUserProfile(profile);
+                } else {
+                    // Create default profile
+                    const defaultProfile = {
+                        themePreference: isDarkMode ? 'dark' : 'light',
+                        lastUpdated: new Date().toISOString(),
+                        favoriteCount: 0,
+                        languagePreference: currentLanguage
+                    };
+                    await saveUserProfile(defaultProfile);
+                    setUserProfile(defaultProfile);
+                }
+            } else {
+                // Use FileSystem for mobile
+                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                const profileExists = await FileSystem.getInfoAsync(profileFile);
+
+                if (profileExists.exists) {
+                    const profileContent = await FileSystem.readAsStringAsync(profileFile);
+                    const profile = JSON.parse(profileContent);
+                    setUserProfile(profile);
+                } else {
+                    // Create default profile
+                    const defaultProfile = {
+                        themePreference: isDarkMode ? 'dark' : 'light',
+                        lastUpdated: new Date().toISOString(),
+                        favoriteCount: 0,
+                        languagePreference: currentLanguage
+                    };
+                    await saveUserProfile(defaultProfile);
+                    setUserProfile(defaultProfile);
+                }
+            }
+        } catch (error) {
+            console.error(i18n.t('error_loading_user_profile') + ':', error);
+        }
+    }, [currentLanguage, isDarkMode, saveUserProfile]);
+
+    const loadFavorites = useCallback(async () => {
+        try {
+            const stored = await AsyncStorage.getItem('favoriteUniversities');
+            if (stored) {
+                const favorites = JSON.parse(stored);
+                setFavoriteUniversities(favorites);
+
+                // Update profile state with current favorite count
+                setUserProfile(prev => ({
+                    ...prev,
+                    favoriteCount: favorites.length,
+                    lastUpdated: new Date().toISOString()
+                }));
+                // Note: We don't save here to avoid conflicts with context-managed preferences
+            }
+        } catch (error) {
+            console.error(i18n.t('error_loading_favorites') + ':', error);
+        }
+    }, []);
+
+    // Load user profile and favorites on initial mount
     useEffect(() => {
         let isMounted = true;
 
-        const loadUserProfile = async () => {
-            try {
-                if (Platform.OS === 'web') {
-                    // Use localStorage for web
-                    const profileData = window.localStorage.getItem('userProfile');
-                    if (profileData) {
-                        const profile = JSON.parse(profileData);
-                        if (isMounted) {
-                            setUserProfile(profile);
-                        }
-                    } else {
-                        // Create default profile
-                        const defaultProfile = {
-                            themePreference: isDarkMode ? 'dark' : 'light',
-                            lastUpdated: new Date().toISOString(),
-                            favoriteCount: 0,
-                            languagePreference: currentLanguage
-                        };
-                        await saveUserProfile(defaultProfile);
-                        if (isMounted) {
-                            setUserProfile(defaultProfile);
-                        }
-                    }
-                } else {
-                    // Use FileSystem for mobile
-                    const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-                    const profileExists = await FileSystem.getInfoAsync(profileFile);
-
-                    if (profileExists.exists) {
-                        const profileContent = await FileSystem.readAsStringAsync(profileFile);
-                        const profile = JSON.parse(profileContent);
-                        if (isMounted) {
-                            setUserProfile(profile);
-                        }
-                    } else {
-                        // Create default profile
-                        const defaultProfile = {
-                            themePreference: isDarkMode ? 'dark' : 'light',
-                            lastUpdated: new Date().toISOString(),
-                            favoriteCount: 0,
-                            languagePreference: currentLanguage
-                        };
-                        await saveUserProfile(defaultProfile);
-                        if (isMounted) {
-                            setUserProfile(defaultProfile);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error(i18n.t('error_loading_user_profile') + ':', error);
-            }
+        const loadData = async () => {
+            await loadUserProfile();
+            await loadFavorites();
         };
 
-        const loadFavorites = async () => {
-            try {
-                const stored = await AsyncStorage.getItem('favoriteUniversities');
-                if (stored) {
-                    const favorites = JSON.parse(stored);
-                    if (isMounted) {
-                        setFavoriteUniversities(favorites);
-
-                        // Update profile state with current favorite count
-                        const updatedProfile = {
-                            ...userProfile,
-                            favoriteCount: favorites.length,
-                            lastUpdated: new Date().toISOString()
-                        };
-                        setUserProfile(updatedProfile);
-                        // Note: We don't save here to avoid conflicts with context-managed preferences
-                    }
-                }
-            } catch (error) {
-                console.error(i18n.t('error_loading_favorites') + ':', error);
-            }
-        };
-
-        loadUserProfile();
-        loadFavorites();
+        loadData();
 
         return () => {
             isMounted = false;
         };
-    }, [currentLanguage, isDarkMode, userProfile]);
+    }, [loadUserProfile, loadFavorites]);
 
     // Refresh favorites every time the screen comes into focus
     useFocusEffect(
         useCallback(() => {
             let isMounted = true;
 
-            const loadFavorites = async () => {
-                try {
-                    const stored = await AsyncStorage.getItem('favoriteUniversities');
-                    if (stored) {
-                        const favorites = JSON.parse(stored);
-                        if (isMounted) {
-                            setFavoriteUniversities(favorites);
-
-                            // Update profile state with current favorite count
-                            const updatedProfile = {
-                                ...userProfile,
-                                favoriteCount: favorites.length,
-                                lastUpdated: new Date().toISOString()
-                            };
-                            setUserProfile(updatedProfile);
-                            // Note: We don't save here to avoid conflicts with context-managed preferences
-                        }
-                    }
-                } catch (error) {
-                    console.error(i18n.t('error_loading_favorites') + ':', error);
-                }
-            };
-
             loadFavorites();
 
             return () => {
                 isMounted = false;
             };
-        }, [userProfile])
+        }, [loadFavorites])
     );
 
     // Save user profile to file
-    const saveUserProfile = async (profile) => {
+    const saveUserProfile = useCallback(async (profile) => {
         try {
             if (Platform.OS === 'web') {
                 // Save to localStorage for web
@@ -166,51 +136,50 @@ export default function MeScreen() {
         } catch (error) {
             console.error(i18n.t('error_saving_user_profile') + ':', error);
         }
-    };
+    }, []);
 
     // Handle language change using LanguageContext
-    const handleLanguageChange = async (lang) => {
+    const handleLanguageChange = useCallback(async (lang) => {
         await changeLanguage(lang);
         setLanguageChanged(true);
         // LanguageContext handles the profile saving
-    };
+    }, [changeLanguage]);
 
     // Restart app to apply language changes
-    const restartApp = async () => {
+    const restartApp = useCallback(async () => {
         try {
             await Updates.reloadAsync();
         } catch (error) {
             console.error('Failed to restart app:', error);
             Alert.alert(i18n.t('error'), i18n.t('restart_failed'));
         }
-    };
+    }, []);
 
-    const saveFavorites = async (favorites) => {
+    const saveFavorites = useCallback(async (favorites) => {
         try {
             await AsyncStorage.setItem('favoriteUniversities', JSON.stringify(favorites));
 
             // Update profile state with new favorite count
-            const updatedProfile = {
-                ...userProfile,
+            setUserProfile(prev => ({
+                ...prev,
                 favoriteCount: favorites.length,
                 lastUpdated: new Date().toISOString()
-            };
-            setUserProfile(updatedProfile);
+            }));
 
             // Update favorite count in profile without affecting other preferences
             await updateFavoriteCount(favorites.length);
         } catch (error) {
             console.error(i18n.t('error_saving_favorites') + ':', error);
         }
-    };
+    }, []);
 
-    const removeFavorite = async (universityId) => {
+    const removeFavorite = useCallback(async (universityId) => {
         const updated = favoriteUniversities.filter(uni => uni.id !== universityId);
         setFavoriteUniversities(updated);
         await saveFavorites(updated);
-    };
+    }, [favoriteUniversities, saveFavorites]);
 
-    const clearAllFavorites = async () => {
+    const clearAllFavorites = useCallback(async () => {
         Alert.alert(
             i18n.t('clear_all_favorites'),
             i18n.t('clear_all_favorites_confirm'),
@@ -226,33 +195,16 @@ export default function MeScreen() {
                 }
             ]
         );
-    };
+    }, [saveFavorites]);
 
     // Handle theme change and update profile
-    const handleThemeToggle = async () => {
+    const handleThemeToggle = useCallback(async () => {
         // The ThemeContext now handles saving the theme preference
         toggleTheme();
         // Note: ThemeContext handles the profile saving
-    };
+    }, [toggleTheme]);
 
-    const viewProfile = async () => {
-        try {
-            if (Platform.OS === 'web') {
-                // Get from localStorage for web
-                const profileData = window.localStorage.getItem('userProfile');
-                Alert.alert(i18n.t('user_profile'), profileData || i18n.t('no_profile_found'));
-            } else {
-                // Get from FileSystem for mobile
-                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
-                const profileContent = await FileSystem.readAsStringAsync(profileFile);
-                Alert.alert(i18n.t('user_profile'), profileContent || i18n.t('no_profile_found'));
-            }
-        } catch (error) {
-            Alert.alert(i18n.t('error'), i18n.t('could_not_read_profile'));
-        }
-    };
-
-    const resetProfile = async () => {
+    const resetProfile = useCallback(async () => {
         Alert.alert(
             i18n.t('reset_profile'),
             i18n.t('reset_profile_confirm'),
@@ -263,6 +215,7 @@ export default function MeScreen() {
                     style: "destructive",
                     onPress: async () => {
                         try {
+                            // Clear all stored data
                             if (Platform.OS === 'web') {
                                 // Clear from localStorage for web
                                 window.localStorage.removeItem('userProfile');
@@ -272,206 +225,212 @@ export default function MeScreen() {
                                 await FileSystem.deleteAsync(profileFile, { idempotent: true });
                             }
 
-                            const defaultProfile = {
-                                themePreference: 'light',
-                                lastUpdated: new Date().toISOString(),
-                                favoriteCount: favoriteUniversities.length,
-                                languagePreference: i18n.locale
+                            // Clear favorites from AsyncStorage
+                            await AsyncStorage.removeItem('favoriteUniversities');
+
+                            // Reset all state to empty values
+                            const emptyProfile = {
+                                themePreference: null,
+                                lastUpdated: null,
+                                favoriteCount: 0,
+                                languagePreference: null
                             };
-                            setUserProfile(defaultProfile);
-                            await saveUserProfile(defaultProfile);
+
+                            setUserProfile(emptyProfile);
+                            setFavoriteUniversities([]);
+                            setLanguageChanged(false);
+
+                            // Don't save the empty profile - just reset the state
                             Alert.alert(i18n.t('success'), i18n.t('profile_reset_success'));
                         } catch (error) {
+                            console.error('Error resetting profile:', error);
                             Alert.alert(i18n.t('error'), i18n.t('could_not_reset_profile'));
                         }
                     }
                 }
             ]
         );
-    };
+    }, []);
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }}>
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+                {/* Header - match Search.js style */}
+                <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
+                    <View style={styles.headerLeft}>
+                        <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('me')}</Text>
+                    </View>
+                    <View style={styles.headerRight}>
+                        <Ionicons name="person-circle-outline" size={28} color={theme.text} style={{ marginLeft: 8 }} />
+                    </View>
+                </View>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
-                {/* Language Selection Card */}
-                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                    <CardContent>
-                        <View style={styles.cardTitleContainer}>
-                            <Ionicons name="language-outline" size={20} color={theme.primary} />
-                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                {i18n.t('language')}
-                            </CardTitle>
-                        </View>
-                        <Text style={{ color: theme.textSecondary, marginBottom: 8 }}>
-                            {i18n.t('selected_language')}: {isChinese ? i18n.t('chinese') : i18n.t('english')}
-                        </Text>
-                        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row', gap: 12 }}>
-                                <Button
-                                    title={i18n.t('english')}
-                                    onPress={() => handleLanguageChange('en')}
-                                    variant={isEnglish ? 'solid' : 'outline'}
-                                    textStyle={{ color: isEnglish ? theme.surface : theme.text }}
-                                    style={{ backgroundColor: isEnglish ? theme.primary : theme.surfaceSecondary }}
-                                />
-                                <Button
-                                    title={i18n.t('chinese')}
-                                    onPress={() => handleLanguageChange('zh')}
-                                    variant={isChinese ? 'solid' : 'outline'}
-                                    textStyle={{ color: isChinese ? theme.surface : theme.text }}
-                                    style={{ backgroundColor: isChinese ? theme.primary : theme.surfaceSecondary }}
-                                />
-                            </View>
-                            {languageChanged && (
-                                <Button
-                                    title={i18n.t('restart_app')}
-                                    onPress={restartApp}
-                                    variant="solid"
-                                    textStyle={{ color: theme.surface }}
-                                    style={{ backgroundColor: theme.primary, paddingHorizontal: 16 }}
-                                />
-                            )}
-                        </View>
-                    </CardContent>
-                </Card>
-
-                {/* Theme Selection Card */}
-                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                    <CardContent>
-                        <View style={styles.cardTitleContainer}>
-                            <Ionicons name="color-palette-outline" size={20} color={theme.primary} />
-                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                {i18n.t('theme_settings')}
-                            </CardTitle>
-                        </View>
-                        <Button
-                            title={isDarkMode ? i18n.t('switch_to_light') : i18n.t('switch_to_dark')}
-                            onPress={handleThemeToggle}
-                            variant="outline"
-                            textStyle={{ color: theme.text }}
-                            style={[styles.themeButton, { backgroundColor: theme.surfaceSecondary }]}
-                        />
-                    </CardContent>
-                </Card>
-
-                {/* Favorite Universities Card */}
-                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                    <CardContent>
-                        <View style={styles.headerRow}>
+                    {/* Language Selection Card */}
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <CardContent>
                             <View style={styles.cardTitleContainer}>
-                                <Ionicons name="heart-outline" size={20} color={theme.primary} />
+                                <Ionicons name="language-outline" size={20} color={theme.primary} />
                                 <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                    {i18n.t('favorite_universities')} ({favoriteUniversities.length})
+                                    {i18n.t('language')}
                                 </CardTitle>
                             </View>
-                            {favoriteUniversities.length > 0 && (
-                                <TouchableOpacity onPress={clearAllFavorites}>
-                                    <Text style={[styles.clearText, { color: theme.primary }]}>{i18n.t('clear_all')}</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
-
-                        {favoriteUniversities.length === 0 ? (
-                            <View style={styles.emptyState}>
-                                <Ionicons name="heart-dislike-outline" size={48} color={theme.textSecondary} />
-                                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                                    {i18n.t('no_favorites_yet')}
-                                </Text>
-                                <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
-                                    {i18n.t('favorites_will_appear_here')}
-                                </Text>
+                            <Text style={{ color: theme.textSecondary, marginBottom: 8 }}>
+                                {i18n.t('selected_language')}: {isChinese ? i18n.t('chinese') : i18n.t('english')}
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row', gap: 12 }}>
+                                    <Button
+                                        title={i18n.t('english')}
+                                        onPress={() => handleLanguageChange('en')}
+                                        variant={isEnglish ? 'solid' : 'outline'}
+                                        textStyle={{ color: isEnglish ? theme.surface : theme.text }}
+                                        style={{ backgroundColor: isEnglish ? theme.primary : theme.surfaceSecondary }}
+                                    />
+                                    <Button
+                                        title={i18n.t('chinese')}
+                                        onPress={() => handleLanguageChange('zh')}
+                                        variant={isChinese ? 'solid' : 'outline'}
+                                        textStyle={{ color: isChinese ? theme.surface : theme.text }}
+                                        style={{ backgroundColor: isChinese ? theme.primary : theme.surfaceSecondary }}
+                                    />
+                                </View>
+                                {languageChanged && (
+                                    <Button
+                                        title={i18n.t('restart_app')}
+                                        onPress={restartApp}
+                                        variant="solid"
+                                        textStyle={{ color: theme.surface }}
+                                        style={{ backgroundColor: theme.primary, paddingHorizontal: 16 }}
+                                    />
+                                )}
                             </View>
-                        ) : (
-                            favoriteUniversities.map((university, index) => (
-                                <TouchableOpacity
-                                    key={university.id || index}
-                                    onPress={() => navigation.navigate('DetailPage', {
-                                        normalized_name: university.normalized_name,
-                                        name: university.name
-                                    })}
-                                    activeOpacity={0.7}
-                                >
-                                    <Card style={[styles.favCard, { backgroundColor: theme.surfaceSecondary }]}>
-                                        <CardContent>
-                                            <View style={styles.favRow}>
-                                                <View style={styles.favInfo}>
-                                                    <CardTitle style={[styles.favTitle, { color: theme.text }]}>
-                                                        {university.name}
-                                                    </CardTitle>
-                                                    <CardSubtitle style={[styles.favSubtitle, { color: theme.textSecondary }]}>
-                                                        {university.country || i18n.t('unknown_country')}
-                                                    </CardSubtitle>
+                        </CardContent>
+                    </Card>
+
+                    {/* Theme Selection Card */}
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <View style={styles.cardTitleContainer}>
+                                <Ionicons name="color-palette-outline" size={20} color={theme.primary} />
+                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                    {i18n.t('theme_settings')}
+                                </CardTitle>
+                            </View>
+                            <Button
+                                title={isDarkMode ? i18n.t('switch_to_light') : i18n.t('switch_to_dark')}
+                                onPress={handleThemeToggle}
+                                variant="outline"
+                                textStyle={{ color: theme.text }}
+                                style={[styles.themeButton, { backgroundColor: theme.surfaceSecondary }]}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Favorite Universities Card */}
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <View style={styles.headerRow}>
+                                <View style={styles.cardTitleContainer}>
+                                    <Ionicons name="heart-outline" size={20} color={theme.primary} />
+                                    <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                        {i18n.t('favorite_universities')} ({favoriteUniversities.length})
+                                    </CardTitle>
+                                </View>
+                                {favoriteUniversities.length > 0 && (
+                                    <TouchableOpacity onPress={clearAllFavorites}>
+                                        <Text style={[styles.clearText, { color: theme.primary }]}>{i18n.t('clear_all')}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            {favoriteUniversities.length === 0 ? (
+                                <View style={styles.emptyState}>
+                                </View>
+                            ) : (
+                                favoriteUniversities.map((university, index) => (
+                                    <TouchableOpacity
+                                        key={university.id || index}
+                                        onPress={() => navigation.navigate('DetailPage', {
+                                            normalized_name: university.normalized_name,
+                                            name: university.name
+                                        })}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Card style={[styles.favCard, { backgroundColor: theme.surfaceSecondary }]}>
+                                            <CardContent>
+                                                <View style={styles.favRow}>
+                                                    <View style={styles.favInfo}>
+                                                        <CardTitle style={[styles.favTitle, { color: theme.text }]}>
+                                                            {university.name || ''}
+                                                        </CardTitle>
+                                                        <CardSubtitle style={[styles.favSubtitle, { color: theme.textSecondary }]}>
+                                                            {university.country || ''}
+                                                        </CardSubtitle>
+                                                    </View>
+                                                    <TouchableOpacity
+                                                        onPress={(e) => {
+                                                            e.stopPropagation(); // Prevent navigation when removing favorite
+                                                            removeFavorite(university.id);
+                                                        }}
+                                                        style={styles.removeButton}
+                                                    >
+                                                        <Ionicons name="heart-dislike" size={24} color={theme.primary} />
+                                                    </TouchableOpacity>
                                                 </View>
-                                                <TouchableOpacity
-                                                    onPress={(e) => {
-                                                        e.stopPropagation(); // Prevent navigation when removing favorite
-                                                        removeFavorite(university.id);
-                                                    }}
-                                                    style={styles.removeButton}
-                                                >
-                                                    <Ionicons name="heart-dislike" size={24} color={theme.primary} />
-                                                </TouchableOpacity>
-                                            </View>
-                                        </CardContent>
-                                    </Card>
-                                </TouchableOpacity>
-                            ))
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* User Profile Card */}
-                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                    <CardContent>
-                        <View style={styles.cardTitleContainer}>
-                            <Ionicons name="person-outline" size={20} color={theme.primary} />
-                            <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                {i18n.t('user_profile')}
-                            </CardTitle>
-                        </View>
-                        <Text style={[styles.profileDescription, { color: theme.textSecondary }]}>
-                            {i18n.t('profile_description')}
-                        </Text>
-
-                        <View style={styles.profileInfo}>
-                            <Text style={[styles.profileItem, { color: theme.text }]}>
-                                {i18n.t('theme_preference')}: <Text style={{ color: theme.primary }}>{userProfile.themePreference}</Text>
-                            </Text>
-                            <Text style={[styles.profileItem, { color: theme.text }]}>
-                                {i18n.t('language')}: <Text style={{ color: theme.primary }}>{isChinese ? i18n.t('chinese') : i18n.t('english')}</Text>
-                            </Text>
-                            <Text style={[styles.profileItem, { color: theme.text }]}>
-                                {i18n.t('favorite_universities')}: <Text style={{ color: theme.primary }}>{userProfile.favoriteCount}</Text>
-                            </Text>
-                            {userProfile.lastUpdated && (
-                                <Text style={[styles.profileItem, { color: theme.textSecondary }]}>
-                                    {i18n.t('last_updated')}: {new Date(userProfile.lastUpdated).toLocaleDateString()}
-                                </Text>
+                                            </CardContent>
+                                        </Card>
+                                    </TouchableOpacity>
+                                ))
                             )}
-                        </View>
+                        </CardContent>
+                    </Card>
 
-                        <View style={styles.buttonRow}>
-                            <Button
-                                title={i18n.t('view_profile')}
-                                onPress={viewProfile}
-                                variant="outline"
-                                textStyle={{ color: theme.text }}
-                                style={[styles.profileButton, { marginRight: 8, backgroundColor: theme.surfaceSecondary }]}
-                            />
-                            <Button
-                                title={i18n.t('reset_profile')}
-                                onPress={resetProfile}
-                                variant="outline"
-                                textStyle={{ color: theme.text }}
-                                style={[styles.profileButton, { backgroundColor: theme.surfaceSecondary }]}
-                            />
-                        </View>
-                    </CardContent>
-                </Card>
+                    {/* User Profile Card */}
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <CardContent>
+                            <View style={styles.cardTitleContainer}>
+                                <Ionicons name="person-outline" size={20} color={theme.primary} />
+                                <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                    {i18n.t('user_profile')}
+                                </CardTitle>
+                            </View>
+                            <Text style={[styles.profileDescription, { color: theme.textSecondary }]}>
+                                {i18n.t('profile_description')}
+                            </Text>
 
-                <View style={{ height: 20 }} />
-            </ScrollView>
+                            <View style={styles.profileInfo}>
+                                <Text style={[styles.profileItem, { color: theme.text }]}>
+                                    {i18n.t('theme_preference')}: <Text style={{ color: theme.primary }}>{userProfile.themePreference}</Text>
+                                </Text>
+                                <Text style={[styles.profileItem, { color: theme.text }]}>
+                                    {i18n.t('language')}: <Text style={{ color: theme.primary }}>{isChinese ? i18n.t('chinese') : i18n.t('english')}</Text>
+                                </Text>
+                                <Text style={[styles.profileItem, { color: theme.text }]}>
+                                    {i18n.t('favorite_universities')}: <Text style={{ color: theme.primary }}>{userProfile.favoriteCount}</Text>
+                                </Text>
+                                {userProfile.lastUpdated && (
+                                    <Text style={[styles.profileItem, { color: theme.textSecondary }]}>
+                                        {i18n.t('last_updated')}: {new Date(userProfile.lastUpdated).toLocaleDateString()}
+                                    </Text>
+                                )}
+                            </View>
+
+                            <View style={styles.buttonContainer}>
+                                <Button
+                                    title={i18n.t('reset_profile')}
+                                    onPress={resetProfile}
+                                    variant="outline"
+                                    textStyle={{ color: theme.text }}
+                                    style={[styles.resetButton, { backgroundColor: theme.surfaceSecondary }]}
+                                />
+                            </View>
+                        </CardContent>
+                    </Card>
+
+                    <View style={{ height: 20 }} />
+                </ScrollView>
+            </SafeAreaView>
         </GestureHandlerRootView >
     );
 }
@@ -479,6 +438,25 @@ export default function MeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+    },
+    headerLeft: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     safeArea: {
         flex: 1,
@@ -563,11 +541,10 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         fontWeight: '500',
     },
-    buttonRow: {
-        flexDirection: 'row',
+    buttonContainer: {
         marginBottom: 16,
     },
-    profileButton: {
-        flex: 1,
+    resetButton: {
+        width: '100%',
     },
 });

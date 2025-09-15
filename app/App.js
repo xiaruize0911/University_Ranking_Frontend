@@ -134,8 +134,9 @@ function MeScreenStack() {
 			}}
 		>
 			<Stack.Screen
-				name={i18n.t('me')}
+				name="Profile"
 				component={MeScreen}
+				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name="DetailPage"

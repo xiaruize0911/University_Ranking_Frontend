@@ -155,7 +155,6 @@ export default function GetUniversityDetail(props) {
     if (!university) {
         return (
             <View style={[styles.center, { backgroundColor: theme.background }]}>
-                <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('no_details_found')}</Text>
             </View>
         );
     }
@@ -173,7 +172,7 @@ export default function GetUniversityDetail(props) {
                         <CardContent style={styles.headerTextContainer}>
                             <CardTitle style={{ color: theme.text }}>{getUniversityName(university.normalized_name, currentLanguage)}</CardTitle>
                             <CardSubtitle style={{ color: theme.textSecondary }}>
-                                {university.city + ', \n' + university.country}
+                                {(university.city || '') + ((university.city || university.country) ? ', \n' : '') + (university.country || '')}
                             </CardSubtitle>
                         </CardContent>
                         <TouchableOpacity
@@ -236,7 +235,7 @@ export default function GetUniversityDetail(props) {
                                 {university.stats.map((item, idx) => (
                                     <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
                                         <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
-                                        <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || i18n.t('not_available')}</Text>
+                                        <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || ''}</Text>
                                     </View>
                                 ))}
                             </View>

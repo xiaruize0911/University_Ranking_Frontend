@@ -52,6 +52,7 @@ export default function RankingDetailPage({ route }) {
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
+                style={{ backgroundColor: theme.background }}
                 renderItem={({ item }) => {
                     const displayName = getUniversityName(item.normalized_name, currentLanguage);
                     return (
@@ -88,7 +89,8 @@ export default function RankingDetailPage({ route }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        // padding: 20,
+        marginHorizontal: 12,
     },
     center: {
         flex: 1,

@@ -52,7 +52,6 @@ export default function UniversitySourceRankingsPage({ route }) {
     if (!rankingData || rankingData.error) {
         return (
             <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
-                <Text style={[styles.errorText, { color: theme.text }]}>{i18n.t('no_rankings_found')}</Text>
             </GestureHandlerRootView>
         );
     }

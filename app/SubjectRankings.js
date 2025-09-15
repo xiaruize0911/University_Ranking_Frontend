@@ -107,7 +107,7 @@ export default function SubjectRankingsPage() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
                 {/* Header */}
-                <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
                     <View style={styles.headerLeft}>
                         <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('rankings_of_subjects_regions')}</Text>
                     </View>
