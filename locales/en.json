@@ -99,6 +99,8 @@
     "error_loading_theme_preference": "Error loading theme preference",
     "error_saving_theme_preference": "Error saving theme preference",
     "error_fetching_details": "Error fetching details",
+    "error_fetching_university_details": "Error fetching university details",
+    "university_not_found": "University not found",
     "error_checking_favorites": "Error checking favorites",
     "error_updating_favorites": "Error updating favorites",
     "error_loading_user_profile": "Error loading user profile",

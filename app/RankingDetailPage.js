@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
-import { getRankingDetail } from '../lib/api';
+import { getRankingDetail, getUniversityDetails } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
@@ -18,6 +18,26 @@ export default function RankingDetailPage({ route }) {
     const navigation = useNavigation();
     const { theme, isDarkMode, toggleTheme } = useTheme();
     const { currentLanguage } = useLanguage();
+
+    // Function to check if university exists before navigating
+    const handleUniversityPress = useCallback(async (normalizedName, displayName) => {
+        try {
+            console.log("Checking university existence for:", normalizedName);
+            const result = await getUniversityDetails(normalizedName);
+            console.log("University details fetched:", result.notFound);
+            if (!result.notFound) {
+                // University exists, navigate to detail page
+                navigation.navigate('DetailPage', {
+                    normalized_name: normalizedName,
+                    name: displayName
+                });
+            }
+            // If not found, do nothing (no navigation)
+        } catch (error) {
+            console.warn('Error checking university existence:', error);
+            // On error, do nothing (no navigation)
+        }
+    }, [navigation]);
 
     useEffect(() => {
         async function fetchDetail() {
@@ -57,7 +77,7 @@ export default function RankingDetailPage({ route }) {
                     const displayName = getUniversityName(item.normalized_name, currentLanguage);
                     return (
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('DetailPage', { normalized_name: item.normalized_name, name: displayName })}
+                            onPress={() => handleUniversityPress(item.normalized_name, displayName)}
                             activeOpacity={0.8}
                         >
                             <Card style={[styles.card, { backgroundColor: theme.surface }]}>
@@ -88,9 +108,7 @@ export default function RankingDetailPage({ route }) {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        // padding: 20,
-        marginHorizontal: 12,
+        flex: 1
     },
     center: {
         flex: 1,

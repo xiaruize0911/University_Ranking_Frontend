@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '../constants/config';
 import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +12,7 @@ import { formatSourceName, formatStatsType } from '../utils/textFormatter';
 import { getUniversityName } from '../lib/universityNameTranslations';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import i18n from '../lib/i18n';
-import { translateText } from '../lib/api';
+import { getUniversityDetails, translateText } from '../lib/api';
 
 export default function GetUniversityDetail(props) {
     // console.log("props: ", props);
@@ -34,12 +33,17 @@ export default function GetUniversityDetail(props) {
 
     useEffect(() => {
         if (normalized_name) {
-            fetch(`${API_BASE_URL}/universities/${normalized_name}`)
-                .then(res => res.json())
+            getUniversityDetails(normalized_name)
                 .then(data => {
-                    setUniversity(data);
-                    setLoading(false);
-                    checkIfFavorite(data);
+                    if (data.notFound) {
+                        // Handle not found case
+                        navigation.goBack();
+                        console.warn(i18n.t('university_not_found') + ':', normalized_name);
+                    } else {
+                        setUniversity(data);
+                        setLoading(false);
+                        checkIfFavorite(data);
+                    }
                 })
                 .catch(err => {
                     console.error(i18n.t('error_fetching_details') + ':', err);

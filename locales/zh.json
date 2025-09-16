@@ -99,6 +99,8 @@
     "error_loading_theme_preference": "加载主题偏好时出错",
     "error_saving_theme_preference": "保存主题偏好时出错",
     "error_fetching_details": "获取详情时出错",
+    "error_fetching_university_details": "获取大学详情时出错",
+    "university_not_found": "未找到大学",
     "error_checking_favorites": "检查收藏时出错",
     "error_updating_favorites": "更新收藏时出错",
     "error_loading_user_profile": "加载用户资料时出错",

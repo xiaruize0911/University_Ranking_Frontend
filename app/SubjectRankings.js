@@ -12,6 +12,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
 import { formatSourceName, formatSubjectName } from '../utils/textFormatter';
 import { getUniversityName } from '../lib/universityNameTranslations';
+import { getUniversityDetails } from '../lib/api';
 import i18n from '../lib/i18n';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -63,6 +64,26 @@ export default function SubjectRankingsPage() {
         setShowFilterMenu(false);
         sourceBottomSheetRef.current?.present();
     }, []);
+
+    // Function to check if university exists before navigating
+    const handleUniversityPress = useCallback(async (normalizedName, displayName) => {
+        try {
+            console.log("Checking university existence for:", normalizedName);
+            const result = await getUniversityDetails(normalizedName);
+            console.log("University details fetched:", result.notFound);
+            if (!result.notFound) {
+                // University exists, navigate to detail page
+                navigation.navigate('DetailPage', {
+                    normalized_name: normalizedName,
+                    name: displayName
+                });
+            }
+            // If not found, do nothing (no navigation)
+        } catch (error) {
+            console.warn('Error checking university existence:', error);
+            // On error, do nothing (no navigation)
+        }
+    }, [navigation]);
 
     const [direction, setDirection] = useState('row');
     const windowDimensions = Dimensions.get('window');
@@ -184,7 +205,7 @@ export default function SubjectRankingsPage() {
                                                     return (
                                                         <TouchableOpacity
                                                             key={uni.normalized_name || uniIdx}
-                                                            onPress={() => navigation.navigate('DetailPage', { normalized_name: uni.normalized_name, name: displayName })}
+                                                            onPress={() => handleUniversityPress(uni.normalized_name, displayName)}
                                                             activeOpacity={0.7}
                                                         >
                                                             <View
