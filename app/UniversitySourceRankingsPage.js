@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getUniversityRankingsBySource } from '../lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -42,22 +41,22 @@ export default function UniversitySourceRankingsPage({ route }) {
 
     if (loading) {
         return (
-            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+            <View style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
                 <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_rankings')}</Text>
-            </GestureHandlerRootView>
+            </View>
         );
     }
 
     if (!rankingData || rankingData.error) {
         return (
-            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
-            </GestureHandlerRootView>
+            <View style={[styles.center, { backgroundColor: theme.background }]}>
+            </View>
         );
     }
 
     return (
-        <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <FlatList
                 data={rankingData.rankings}
                 keyExtractor={(item, idx) => `${item.subject}-${idx}`}
@@ -88,7 +87,7 @@ export default function UniversitySourceRankingsPage({ route }) {
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
             />
-        </GestureHandlerRootView>
+        </View>
     );
 }
 

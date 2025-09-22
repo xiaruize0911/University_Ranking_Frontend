@@ -2,6 +2,8 @@ import { registerRootComponent } from 'expo';
 import App from './app/App.js';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native';
 // import TestScreen from './app/Test.js';
 // import SearchScreen from './app/Search.js';
 

@@ -42,8 +42,11 @@ export const darkTheme = {
 
 export const ThemeProvider = ({ children }) => {
     const systemColorScheme = useColorScheme();
-    const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
+    const [themeMode, setThemeMode] = useState('auto'); // 'light', 'dark', or 'auto'
     const [isLoading, setIsLoading] = useState(true);
+
+    // Determine if dark mode should be active based on themeMode
+    const isDarkMode = themeMode === 'auto' ? systemColorScheme === 'dark' : themeMode === 'dark';
 
     // Load saved theme preference on app startup
     useEffect(() => {
@@ -55,9 +58,9 @@ export const ThemeProvider = ({ children }) => {
                     // Use localStorage for web
                     const themePref = window.localStorage.getItem('themePreference');
                     if (themePref && isMounted) {
-                        setIsDarkMode(themePref === 'dark');
+                        setThemeMode(themePref);
                     } else if (isMounted) {
-                        setIsDarkMode(systemColorScheme === 'dark');
+                        setThemeMode('auto');
                     }
                 } else {
                     // Use FileSystem for mobile
@@ -67,18 +70,18 @@ export const ThemeProvider = ({ children }) => {
                         const profileContent = await FileSystem.readAsStringAsync(profileFile);
                         const profile = JSON.parse(profileContent);
                         if (profile.themePreference && isMounted) {
-                            setIsDarkMode(profile.themePreference === 'dark');
+                            setThemeMode(profile.themePreference);
                         } else if (isMounted) {
-                            setIsDarkMode(systemColorScheme === 'dark');
+                            setThemeMode('auto');
                         }
                     } else if (isMounted) {
-                        setIsDarkMode(systemColorScheme === 'dark');
+                        setThemeMode('auto');
                     }
                 }
             } catch (error) {
                 console.error(i18n.t('error_loading_theme_preference') + ':', error);
                 if (isMounted) {
-                    setIsDarkMode(systemColorScheme === 'dark');
+                    setThemeMode('auto');
                 }
             } finally {
                 if (isMounted) {
@@ -95,18 +98,18 @@ export const ThemeProvider = ({ children }) => {
     }, [systemColorScheme]);
 
     const toggleTheme = async () => {
-        const newTheme = !isDarkMode;
-        setIsDarkMode(newTheme);
+        const nextMode = themeMode === 'light' ? 'dark' : themeMode === 'dark' ? 'auto' : 'light';
+        setThemeMode(nextMode);
 
         try {
             if (Platform.OS === 'web') {
                 // Save to localStorage for web
-                window.localStorage.setItem('themePreference', newTheme ? 'dark' : 'light');
+                window.localStorage.setItem('themePreference', nextMode);
             } else {
                 // Save to FileSystem for mobile
                 const profileFile = FileSystem.documentDirectory + 'user_profile.json';
                 let profile = {
-                    themePreference: newTheme ? 'dark' : 'light',
+                    themePreference: nextMode,
                     lastUpdated: new Date().toISOString()
                 };
 
@@ -116,13 +119,80 @@ export const ThemeProvider = ({ children }) => {
                     const existingProfile = JSON.parse(existingProfileContent);
                     profile = {
                         ...existingProfile,
-                        themePreference: newTheme ? 'dark' : 'light',
+                        themePreference: nextMode,
                         lastUpdated: new Date().toISOString()
                     };
                 } else {
                     // Create default profile with only theme preference
                     profile = {
-                        themePreference: newTheme ? 'dark' : 'light',
+                        themePreference: nextMode,
+                        languagePreference: 'en',
+                        favoriteCount: 0,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+                await FileSystem.writeAsStringAsync(profileFile, JSON.stringify(profile, null, 2));
+            }
+        } catch (error) {
+            console.error(i18n.t('error_saving_theme_preference') + ':', error);
+        }
+    };
+
+    const resetTheme = async () => {
+        setThemeMode('auto');
+
+        try {
+            if (Platform.OS === 'web') {
+                // Clear from localStorage for web
+                window.localStorage.removeItem('themePreference');
+            } else {
+                // Clear from FileSystem for mobile
+                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                const profileExists = await FileSystem.getInfoAsync(profileFile);
+                if (profileExists.exists) {
+                    const existingProfileContent = await FileSystem.readAsStringAsync(profileFile);
+                    const existingProfile = JSON.parse(existingProfileContent);
+                    const updatedProfile = {
+                        ...existingProfile,
+                        themePreference: 'auto',
+                        lastUpdated: new Date().toISOString()
+                    };
+                    await FileSystem.writeAsStringAsync(profileFile, JSON.stringify(updatedProfile, null, 2));
+                }
+            }
+        } catch (error) {
+            console.error(i18n.t('error_saving_theme_preference') + ':', error);
+        }
+    };
+
+    const setThemeModeDirectly = async (newMode) => {
+        setThemeMode(newMode);
+
+        try {
+            if (Platform.OS === 'web') {
+                // Save to localStorage for web
+                window.localStorage.setItem('themePreference', newMode);
+            } else {
+                // Save to FileSystem for mobile
+                const profileFile = FileSystem.documentDirectory + 'user_profile.json';
+                let profile = {
+                    themePreference: newMode,
+                    lastUpdated: new Date().toISOString()
+                };
+
+                const profileExists = await FileSystem.getInfoAsync(profileFile);
+                if (profileExists.exists) {
+                    const existingProfileContent = await FileSystem.readAsStringAsync(profileFile);
+                    const existingProfile = JSON.parse(existingProfileContent);
+                    profile = {
+                        ...existingProfile,
+                        themePreference: newMode,
+                        lastUpdated: new Date().toISOString()
+                    };
+                } else {
+                    // Create default profile with only theme preference
+                    profile = {
+                        themePreference: newMode,
                         languagePreference: 'en',
                         favoriteCount: 0,
                         lastUpdated: new Date().toISOString()
@@ -143,7 +213,7 @@ export const ThemeProvider = ({ children }) => {
     }
 
     return (
-        <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, isDarkMode, themeMode, toggleTheme, resetTheme, setThemeModeDirectly }}>
             {children}
         </ThemeContext.Provider>
     );

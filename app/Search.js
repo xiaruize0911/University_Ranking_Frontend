@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { searchUniversities, getCountries } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
@@ -130,22 +129,33 @@ export default function SearchScreen() {
     }, []);
 
     const handleSearchIconPress = useCallback(() => {
+        // Close all other panels when opening search
+        setShowFilterMenu(false);
+        countrySheetRef.current?.dismiss();
+        rankingSheetRef.current?.dismiss();
         setIsSearchExpanded(!isSearchExpanded);
-        setShowFilterMenu(false); // Close filter menu when opening search
     }, [isSearchExpanded]);
 
     const handleFiltersIconPress = useCallback(() => {
+        // Close all other panels when opening filter menu
+        setIsSearchExpanded(false);
+        countrySheetRef.current?.dismiss();
+        rankingSheetRef.current?.dismiss();
         setShowFilterMenu(!showFilterMenu);
     }, [showFilterMenu]);
 
     const handleCountryFilterPress = useCallback(() => {
+        // Close all other panels when opening country sheet
+        setIsSearchExpanded(false);
         setShowFilterMenu(false);
-        setCountrySearchQuery('');
         rankingSheetRef.current?.dismiss();
+        setCountrySearchQuery('');
         countrySheetRef.current?.present();
     }, []);
 
     const handleRankingFilterPress = useCallback(() => {
+        // Close all other panels when opening ranking sheet
+        setIsSearchExpanded(false);
         setShowFilterMenu(false);
         countrySheetRef.current?.dismiss();
         rankingSheetRef.current?.present();
@@ -181,87 +191,85 @@ export default function SearchScreen() {
     };
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-                {/* Header */}
-                <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
-                    <View style={styles.headerLeft}>
-                        <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('college_rankings')}</Text>
-                    </View>
-                    <View style={styles.headerRight}>
-                        <TouchableOpacity
-                            style={styles.headerIcon}
-                            onPress={handleSearchIconPress}
-                        >
-                            <Ionicons name="search" size={24} color={theme.text} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.headerIcon}
-                            onPress={handleFiltersIconPress}
-                        >
-                            <Ionicons name="filter" size={24} color={theme.text} />
-                        </TouchableOpacity>
-                    </View>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
+                <View style={styles.headerLeft}>
+                    <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('college_rankings')}</Text>
                 </View>
-
-                {/* Filter Menu */}
-                {showFilterMenu && (
-                    <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TouchableOpacity
-                            style={[styles.filterMenuItem, { borderBottomColor: theme.border }]}
-                            onPress={handleCountryFilterPress}
-                        >
-                            <Ionicons name="flag" size={20} color={theme.text} />
-                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_country')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.filterMenuItem}
-                            onPress={handleRankingFilterPress}
-                        >
-                            <Ionicons name="trophy" size={20} color={theme.text} />
-                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-                {/* Expandable Search Input */}
-                {isSearchExpanded && (
-                    <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TextInput
-                            style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                            placeholder={i18n.t('search_university_here')}
-                            placeholderTextColor={theme.textSecondary}
-                            value={query}
-                            onChangeText={setQuery}
-                            autoFocus={true}
-                        />
-                    </View>
-                )}
-
-                {/* Main Content */}
-                <View style={styles.content}>
-                    {isLoading ? (
-                        <View style={styles.loadingContainer}>
-                            <Animated.View style={{
-                                transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
-                                marginBottom: 16,
-                            }}>
-                                <ActivityIndicator size="large" color={theme.primary} />
-                            </Animated.View>
-                            <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
-                        </View>
-                    ) : (
-                        <FlatList
-                            style={styles.resultsList}
-                            data={results}
-                            keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
-                            renderItem={renderUniversityCard}
-                            ListHeaderComponent={<View />}
-                            showsVerticalScrollIndicator={false}
-                        />
-                    )}
+                <View style={styles.headerRight}>
+                    <TouchableOpacity
+                        style={styles.headerIcon}
+                        onPress={handleSearchIconPress}
+                    >
+                        <Ionicons name="search" size={24} color={theme.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.headerIcon}
+                        onPress={handleFiltersIconPress}
+                    >
+                        <Ionicons name="filter" size={24} color={theme.text} />
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView>
+            </View>
+
+            {/* Filter Menu */}
+            {showFilterMenu && (
+                <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <TouchableOpacity
+                        style={[styles.filterMenuItem, { borderBottomColor: theme.border }]}
+                        onPress={handleCountryFilterPress}
+                    >
+                        <Ionicons name="flag" size={20} color={theme.text} />
+                        <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_country')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.filterMenuItem}
+                        onPress={handleRankingFilterPress}
+                    >
+                        <Ionicons name="trophy" size={20} color={theme.text} />
+                        <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Expandable Search Input */}
+            {isSearchExpanded && (
+                <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <TextInput
+                        style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+                        placeholder={i18n.t('search_university_here')}
+                        placeholderTextColor={theme.textSecondary}
+                        value={query}
+                        onChangeText={setQuery}
+                        autoFocus={true}
+                    />
+                </View>
+            )}
+
+            {/* Main Content */}
+            <View style={styles.content}>
+                {isLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <Animated.View style={{
+                            transform: [{ rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+                            marginBottom: 16,
+                        }}>
+                            <ActivityIndicator size="large" color={theme.primary} />
+                        </Animated.View>
+                        <Text style={{ color: theme.textSecondary, fontSize: 16, fontWeight: '500' }}>{i18n.t('loading_rankings')}</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        style={styles.resultsList}
+                        data={results}
+                        keyExtractor={(item, index) => `${item.normalized_name}-${index}`}
+                        renderItem={renderUniversityCard}
+                        ListHeaderComponent={<View />}
+                        showsVerticalScrollIndicator={false}
+                    />
+                )}
+            </View>
 
             <BottomSheetModal
                 ref={countrySheetRef}
@@ -321,7 +329,7 @@ export default function SearchScreen() {
                     ))}
                 </BottomSheetScrollView>
             </BottomSheetModal>
-        </GestureHandlerRootView>
+        </SafeAreaView>
     );
 }
 

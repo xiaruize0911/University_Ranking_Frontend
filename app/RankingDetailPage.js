@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
 import { getRankingDetail, getUniversityDetails } from '../lib/api';
 import { useNavigation } from '@react-navigation/native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Card, CardContent, CardTitle, CardSubtitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -60,15 +59,15 @@ export default function RankingDetailPage({ route }) {
 
     if (loading) {
         return (
-            <GestureHandlerRootView style={[styles.center, { backgroundColor: theme.background }]}>
+            <View style={[styles.center, { backgroundColor: theme.background }]}>
                 <ActivityIndicator size="large" color={theme.primary} />
                 <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{i18n.t('loading_ranking_details')}</Text>
-            </GestureHandlerRootView>
+            </View>
         );
     }
 
     return (
-        <GestureHandlerRootView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <FlatList
                 data={rankingDetail}
                 keyExtractor={(item, idx) => `${item.normalized_name}-${idx}`}
@@ -102,7 +101,7 @@ export default function RankingDetailPage({ route }) {
                 }}
                 showsVerticalScrollIndicator={false}
             />
-        </GestureHandlerRootView>
+        </View>
     );
 }
 

@@ -1,7 +1,12 @@
 {
     "theme_settings": "主题设置",
+    "current_mode": "当前模式",
     "switch_to_light": "切换到浅色模式",
     "switch_to_dark": "切换到深色模式",
+    "switch_to_auto": "切换到自动模式",
+    "light_mode": "浅色模式",
+    "dark_mode": "深色模式",
+    "auto_mode": "自动模式",
     "language": "语言",
     "device_language": "设备语言",
     "selected_language": "选择的语言",
@@ -11,7 +16,9 @@
     "favorite_universities": "收藏的大学",
     "clear_all": "清除全部",
     "no_favorites_yet": "还没有收藏的大学",
-    "favorites_will_appear_here": "收藏的大学将显示在这里",
+    "add_favorites_hint": "在大学详情页面点击心形图标来添加收藏",
+    "view_favorites": "查看收藏",
+    "manage_your_favorite_universities": "管理您的收藏大学",
     "unknown_country": "未知国家",
     "user_profile": "用户资料",
     "profile_description": "您的偏好设置会自动保存到配置文件中",
@@ -123,5 +130,6 @@
     "restart_app_message": "请重启应用以应用语言更改",
     "error_translating_text": "翻译文本时出错",
     "translating": "翻译中",
-    "subjects": "学科"
+    "subjects": "学科",
+    "Profile": "我的"
 }

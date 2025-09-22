@@ -1,7 +1,12 @@
 {
     "theme_settings": "Theme Settings",
+    "current_mode": "Current Mode",
     "switch_to_light": "Switch to Light Mode",
     "switch_to_dark": "Switch to Dark Mode",
+    "switch_to_auto": "Switch to Auto Mode",
+    "light_mode": "Light Mode",
+    "dark_mode": "Dark Mode",
+    "auto_mode": "Auto Mode",
     "language": "Language",
     "device_language": "Device Language",
     "selected_language": "Selected Language",
@@ -11,7 +16,9 @@
     "favorite_universities": "Favorite Universities",
     "clear_all": "Clear All",
     "no_favorites_yet": "No favorite universities yet",
-    "favorites_will_appear_here": "Favorite universities will appear here",
+    "add_favorites_hint": "Add favorites by tapping the heart icon on university details",
+    "view_favorites": "View Favorites",
+    "manage_your_favorite_universities": "Manage your favorite universities",
     "unknown_country": "Unknown Country",
     "user_profile": "User Profile",
     "profile_description": "Your preferences and settings are automatically saved to a profile file",
@@ -34,7 +41,7 @@
     "college_rankings": "College Rankings",
     "university_details": "University Details",
     "university_source_rankings": "University Source Rankings",
-    "rankings_of_subjects_regions": "Rankings of Subjects&Regions",
+    "rankings_of_subjects_regions": "Subjects&Regions",
     "me": "Me",
     "search_university_here": "Search University Here...",
     "all_countries": "All Countries",
@@ -123,5 +130,6 @@
     "restart_app_message": "Please restart the app to apply the language changes",
     "error_translating_text": "Error translating text",
     "translating": "Translating",
-    "subjects": "Subjects"
+    "subjects": "Subjects",
+    "Profile": "Profile"
 }

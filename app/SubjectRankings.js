@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FlatList, Dimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -51,16 +50,22 @@ export default function SubjectRankingsPage() {
     }, []);
 
     const handleSearchIconPress = useCallback(() => {
+        // Close all other panels when opening search
+        setShowFilterMenu(false);
+        sourceBottomSheetRef.current?.dismiss();
         setIsSearchExpanded(!isSearchExpanded);
-        setShowFilterMenu(false); // Close filter menu when opening search
     }, [isSearchExpanded]);
 
     const handleFiltersIconPress = useCallback(() => {
+        // Close all other panels when opening filter menu
+        setIsSearchExpanded(false);
+        sourceBottomSheetRef.current?.dismiss();
         setShowFilterMenu(!showFilterMenu);
-        setIsSearchExpanded(false); // Close search when opening filter menu
     }, [showFilterMenu]);
 
     const handleSourceFilterPress = useCallback(() => {
+        // Close all other panels when opening source sheet
+        setIsSearchExpanded(false);
         setShowFilterMenu(false);
         sourceBottomSheetRef.current?.present();
     }, []);
@@ -125,138 +130,136 @@ export default function SubjectRankingsPage() {
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-                {/* Header */}
-                <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
-                    <View style={styles.headerLeft}>
-                        <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('rankings_of_subjects_regions')}</Text>
-                    </View>
-                    <View style={styles.headerRight}>
-                        <TouchableOpacity
-                            style={styles.headerIcon}
-                            onPress={handleSearchIconPress}
-                        >
-                            <Ionicons name="search" size={24} color={theme.text} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.headerIcon}
-                            onPress={handleFiltersIconPress}
-                        >
-                            <Ionicons name="filter" size={24} color={theme.text} />
-                        </TouchableOpacity>
-                    </View>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
+                <View style={styles.headerLeft}>
+                    <Text style={[styles.headerTitle, { color: theme.text }]}>{i18n.t('rankings_of_subjects_regions')}</Text>
                 </View>
+                <View style={styles.headerRight}>
+                    <TouchableOpacity
+                        style={styles.headerIcon}
+                        onPress={handleSearchIconPress}
+                    >
+                        <Ionicons name="search" size={24} color={theme.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.headerIcon}
+                        onPress={handleFiltersIconPress}
+                    >
+                        <Ionicons name="filter" size={24} color={theme.text} />
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                {/* Filter Menu */}
-                {showFilterMenu && (
-                    <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TouchableOpacity
-                            style={styles.filterMenuItem}
-                            onPress={handleSourceFilterPress}
-                        >
-                            <Ionicons name="school" size={20} color={theme.text} />
-                            <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_source')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+            {/* Filter Menu */}
+            {showFilterMenu && (
+                <View style={[styles.filterMenu, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <TouchableOpacity
+                        style={styles.filterMenuItem}
+                        onPress={handleSourceFilterPress}
+                    >
+                        <Ionicons name="school" size={20} color={theme.text} />
+                        <Text style={[styles.filterMenuText, { color: theme.text }]}>{i18n.t('select_source')}</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
-                {/* Expandable Search Input */}
-                {isSearchExpanded && (
-                    <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TextInput
-                            style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
-                            placeholder={i18n.t('subject_region')}
-                            placeholderTextColor={theme.textSecondary}
-                            value={subjectInput}
-                            onChangeText={setSubjectInput}
-                            autoFocus={true}
-                        />
-                    </View>
-                )}
-
-                {/* Main Content */}
-                <View style={styles.content}>
-                    <FlatList
-                        style={{ marginTop: 0 }}
-                        data={filteredRankings}
-                        keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
-                        showsVerticalScrollIndicator={false}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => {
-                                    navigation.navigate('RankingDetailPage', {
-                                        table: item.table,
-                                        source: item.source,
-                                        subject: item.subject
-                                    });
-                                }}
-                                activeOpacity={0.8}
-                            >
-                                <Card style={[styles.card, { backgroundColor: theme.surface }]}>
-                                    <CardContent>
-                                        <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
-                                            {formatSourceName(item.source)} - {formatSubjectName(item.subject)}
-                                        </CardTitle>
-                                        {item.top_universities && item.top_universities.length > 0 && (
-                                            <View style={[styles.topUContainer, { flexDirection: direction }]}>
-                                                {item.top_universities.slice(0, 3).map((uni, uniIdx) => {
-                                                    const displayName = getUniversityName(uni.normalized_name, currentLanguage);
-                                                    return (
-                                                        <TouchableOpacity
-                                                            key={uni.normalized_name || uniIdx}
-                                                            onPress={() => handleUniversityPress(uni.normalized_name, displayName)}
-                                                            activeOpacity={0.7}
-                                                        >
-                                                            <View
-                                                                style={[
-                                                                    styles.top_u_block,
-                                                                    {
-                                                                        backgroundColor: theme.surfaceSecondary,
-                                                                        borderLeftColor: theme.primary,
-                                                                    },
-                                                                    direction === 'row'
-                                                                        ? {
-                                                                            width: (dimensions.window.width - 80) / 3,
-                                                                            height: (dimensions.window.width - 80) / 3,
-                                                                            flex: 0
-                                                                        }
-                                                                        : {
-                                                                            width: dimensions.window.width - 80,
-                                                                            alignSelf: 'center',
-                                                                            marginBottom: 8
-                                                                        }
-                                                                ]}
-                                                            >
-                                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
-                                                                    <Text>
-                                                                        <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
-                                                                        <Text style={[
-                                                                            styles.universityName,
-                                                                            { color: theme.text },
-                                                                            direction === 'row'
-                                                                                ? { fontSize: 12, lineHeight: 14 }
-                                                                                : { fontSize: 14, lineHeight: 18 }
-                                                                        ]}>
-                                                                            {displayName}
-                                                                        </Text>
-                                                                    </Text>
-                                                                </View>
-                                                            </View>
-                                                        </TouchableOpacity>
-                                                    );
-                                                })}
-                                            </View>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </TouchableOpacity>
-                        )
-                        }
-                        ListHeaderComponent={< View />}
+            {/* Expandable Search Input */}
+            {isSearchExpanded && (
+                <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                    <TextInput
+                        style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
+                        placeholder={i18n.t('subject_region')}
+                        placeholderTextColor={theme.textSecondary}
+                        value={subjectInput}
+                        onChangeText={setSubjectInput}
+                        autoFocus={true}
                     />
                 </View>
-            </SafeAreaView>
+            )}
+
+            {/* Main Content */}
+            <View style={styles.content}>
+                <FlatList
+                    style={{ marginTop: 0 }}
+                    data={filteredRankings}
+                    keyExtractor={(item, idx) => `${item.source}-${item.subject}-${idx}`}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('RankingDetailPage', {
+                                    table: item.table,
+                                    source: item.source,
+                                    subject: item.subject
+                                });
+                            }}
+                            activeOpacity={0.8}
+                        >
+                            <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                                <CardContent>
+                                    <CardTitle style={[styles.cardTitle, { color: theme.text }]}>
+                                        {formatSourceName(item.source)} - {formatSubjectName(item.subject)}
+                                    </CardTitle>
+                                    {item.top_universities && item.top_universities.length > 0 && (
+                                        <View style={[styles.topUContainer, { flexDirection: direction }]}>
+                                            {item.top_universities.slice(0, 3).map((uni, uniIdx) => {
+                                                const displayName = getUniversityName(uni.normalized_name, currentLanguage);
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={uni.normalized_name || uniIdx}
+                                                        onPress={() => handleUniversityPress(uni.normalized_name, displayName)}
+                                                        activeOpacity={0.7}
+                                                    >
+                                                        <View
+                                                            style={[
+                                                                styles.top_u_block,
+                                                                {
+                                                                    backgroundColor: theme.surfaceSecondary,
+                                                                    borderLeftColor: theme.primary,
+                                                                },
+                                                                direction === 'row'
+                                                                    ? {
+                                                                        width: (dimensions.window.width - 80) / 3,
+                                                                        height: (dimensions.window.width - 80) / 3,
+                                                                        flex: 0
+                                                                    }
+                                                                    : {
+                                                                        width: dimensions.window.width - 80,
+                                                                        alignSelf: 'center',
+                                                                        marginBottom: 8
+                                                                    }
+                                                            ]}
+                                                        >
+                                                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}>
+                                                                <Text>
+                                                                    <Text style={[styles.rankNumber, { color: theme.primary, fontWeight: 'bold' }]}>{i18n.t('rank_prefix')}{uniIdx + 1} </Text>
+                                                                    <Text style={[
+                                                                        styles.universityName,
+                                                                        { color: theme.text },
+                                                                        direction === 'row'
+                                                                            ? { fontSize: 12, lineHeight: 14 }
+                                                                            : { fontSize: 14, lineHeight: 18 }
+                                                                    ]}>
+                                                                        {displayName}
+                                                                    </Text>
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </View>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TouchableOpacity>
+                    )
+                    }
+                    ListHeaderComponent={< View />}
+                />
+            </View>
 
             {/* Source Selection Bottom Sheet Modal */}
             <BottomSheetModal
@@ -283,7 +286,7 @@ export default function SubjectRankingsPage() {
                     ))}
                 </BottomSheetScrollView>
             </BottomSheetModal>
-        </GestureHandlerRootView >
+        </SafeAreaView>
     );
 }
 
