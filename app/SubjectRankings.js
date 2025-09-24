@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { FlatList, Dimensions } from 'react-native';
-import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
-import Input from '../components/Input';
-import Button from '../components/Button';
+import { BottomSheetScrollView, BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { Card, CardContent, CardTitle } from '../components/Card';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -30,7 +28,6 @@ export default function SubjectRankingsPage() {
 
     // Bottom sheet for source selection only
     const sourceBottomSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['25%', '50%'], []);
 
     // Extract unique sources for selection
     useEffect(() => {
@@ -264,13 +261,20 @@ export default function SubjectRankingsPage() {
             {/* Source Selection Bottom Sheet Modal */}
             <BottomSheetModal
                 ref={sourceBottomSheetRef}
-                index={0}
-                snapPoints={snapPoints}
+                enableDynamicSizing
                 enablePanDownToClose={true}
                 backgroundStyle={{ backgroundColor: theme.surface }}
                 handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+                backdropComponent={(props) => (
+                    <BottomSheetBackdrop
+                        {...props}
+                        disappearsOnIndex={-1}
+                        appearsOnIndex={0}
+                        opacity={0.5}
+                    />
+                )}
             >
-                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                <BottomSheetScrollView style={[{ backgroundColor: theme.surface }]} contentContainerStyle={styles.sheetContainer}>
                     <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_source')}</Text>
                     {sourceItems.map((item, index) => (
                         <TouchableOpacity
