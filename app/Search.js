@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
-import BottomSheet, { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { searchUniversities, getCountries } from '../lib/api';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRankings } from '../contexts/RankingsContext';
@@ -278,9 +278,17 @@ export default function SearchScreen() {
                 enablePanDownToClose={true}
                 backgroundStyle={{ backgroundColor: theme.surface }}
                 handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
+                backdropComponent={(props) => (
+                    <BottomSheetBackdrop
+                        {...props}
+                        disappearsOnIndex={-1}
+                        appearsOnIndex={0}
+                        opacity={0.5}
+                    />
+                )}
                 topInset={50}
             >
-                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                <BottomSheetScrollView style={[{ backgroundColor: theme.surface }]} contentContainerStyle={styles.sheetContainer}>
                     <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_country')}</Text>
                     <TextInput
                         style={[styles.input, { backgroundColor: theme.input, borderColor: theme.border, color: theme.text }]}
@@ -307,13 +315,20 @@ export default function SearchScreen() {
 
             <BottomSheetModal
                 ref={rankingSheetRef}
-                index={0}
-                snapPoints={snapPoints}
-                enablePanDownToClose={true}
+                enableDynamicSizing
+                enablePanDownToClose
+                backdropComponent={(props) => (
+                    <BottomSheetBackdrop
+                        {...props}
+                        disappearsOnIndex={-1}
+                        appearsOnIndex={0}
+                        opacity={0.5}
+                    />
+                )}
                 backgroundStyle={{ backgroundColor: theme.surface }}
                 handleIndicatorStyle={{ backgroundColor: theme.textSecondary }}
             >
-                <BottomSheetScrollView style={[styles.sheetContainer, { backgroundColor: theme.surface }]}>
+                <BottomSheetScrollView style={[{ backgroundColor: theme.surface }]} contentContainerStyle={styles.sheetContainer}>
                     <Text style={[styles.sheetTitle, { color: theme.text }]}>{i18n.t('select_ranking')}</Text>
                     {rankingItems.map((item, index) => (
                         <TouchableOpacity
@@ -471,8 +486,7 @@ const styles = StyleSheet.create({
     },
     sheetContainer: {
         flex: 1,
-        // padding: 16,
-        // paddingBottom: 100,
+        paddingBottom: 24,
     },
     sheetTitle: {
         fontSize: 18,
