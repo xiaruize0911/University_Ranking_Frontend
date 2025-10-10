@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { View, Text, StyleSheet, Animated, Easing, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import SearchScreen from './Search';
 import UniversityDetail from './DetailPage';
 import SubjectRankingsPage from './SubjectRankings';
@@ -21,6 +21,7 @@ import { LanguageProvider, useLanguage } from '../contexts/LanguageContext';
 import i18n from '../lib/i18n';
 import { getAllUniversityNameTranslations } from '../lib/api';
 import { setUniversityNameTranslations } from '../lib/universityNameTranslations';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -34,289 +35,11 @@ const queryClient = new QueryClient({
 	},
 });
 
+
+
 const { width, height } = Dimensions.get('window');
 
-// Anime-themed Loading Component with Forced Watch
-function LoadingScreen({ onLoadingComplete }) {
-	const { currentLanguage } = useLanguage();
-	const { isDarkMode } = useTheme();
-	const [fadeAnim] = useState(new Animated.Value(0));
-	const [scaleAnim] = useState(new Animated.Value(0.5));
-	const [progressAnim] = useState(new Animated.Value(0));
-	const [textAnim] = useState(new Animated.Value(0));
-	const [particleAnim1] = useState(new Animated.Value(0));
-	const [particleAnim2] = useState(new Animated.Value(0));
-	const [particleAnim3] = useState(new Animated.Value(0));
-	const [showSkipButton, setShowSkipButton] = useState(false);
-	const [isComplete, setIsComplete] = useState(false);
 
-	// Language-specific content
-	const loadingTexts = {
-		en: {
-			mainTitle: 'University Rankings',
-			subTitle: 'University Rankings',
-			tagline: '"Together, one step towards the future"',
-			loadingText: 'Loading data...',
-			completeText: 'Ready!',
-			skipButton: 'Tap to Start'
-		},
-		zh: {
-			mainTitle: '大学排名',
-			subTitle: 'University Rankings',
-			tagline: '"一起迈向未来的步伐"',
-			loadingText: '数据加载中...',
-			completeText: '准备完成！',
-			skipButton: '点击开始'
-		}
-	};
-
-	const currentTexts = loadingTexts[currentLanguage] || loadingTexts.en;
-
-	// Dynamic styles based on theme
-	const getLoadingStyles = (isDark) => ({
-		loadingContainer: {
-			flex: 1,
-			backgroundColor: isDark ? '#0f0f23' : '#f0f8ff', // Dark blue-black vs light blue-white
-			justifyContent: 'center',
-			alignItems: 'center',
-		},
-		animeMainTitle: {
-			fontSize: 32,
-			fontWeight: 'bold',
-			color: isDark ? '#ffffff' : '#2c3e50', // White vs dark text
-			textAlign: 'center',
-			marginBottom: 8,
-			textShadowColor: '#4a90e2',
-			textShadowOffset: { width: 0, height: 0 },
-			textShadowRadius: 10,
-			fontFamily: 'serif',
-		},
-		animeTagline: {
-			fontSize: 14,
-			color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(44, 62, 80, 0.7)', // Light white vs dark gray
-			textAlign: 'center',
-			fontStyle: 'italic',
-			textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(74, 144, 226, 0.3)',
-			textShadowOffset: { width: 0, height: 1 },
-			textShadowRadius: 3,
-		},
-		progressBarBackground: {
-			width: '100%',
-			height: 8,
-			backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(74, 144, 226, 0.2)', // Light white vs light blue
-			borderRadius: 4,
-			marginBottom: 16,
-			overflow: 'hidden',
-			borderWidth: 1,
-			borderColor: isDark ? 'rgba(74, 144, 226, 0.3)' : 'rgba(74, 144, 226, 0.4)',
-		},
-		progressText: {
-			fontSize: 16,
-			color: isDark ? '#ffffff' : '#2c3e50', // White vs dark text
-			fontWeight: '600',
-			textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(74, 144, 226, 0.3)',
-			textShadowOffset: { width: 0, height: 1 },
-			textShadowRadius: 3,
-		},
-		skipButtonText: {
-			fontSize: 18,
-			color: isDark ? '#ffffff' : '#2c3e50', // White vs dark text
-			fontWeight: 'bold',
-			textAlign: 'center',
-			textShadowColor: '#4a90e2',
-			textShadowOffset: { width: 0, height: 0 },
-			textShadowRadius: 8,
-		},
-	});
-
-	const loadingStyles = getLoadingStyles(isDarkMode);
-
-	useEffect(() => {
-		// Start the anime-style loading sequence
-		const startAnimeLoading = async () => {
-			// Phase 1: Dramatic entrance
-			Animated.parallel([
-				Animated.timing(fadeAnim, {
-					toValue: 1,
-					duration: 1000,
-					easing: Easing.out(Easing.cubic),
-					useNativeDriver: true,
-				}),
-				Animated.spring(scaleAnim, {
-					toValue: 1,
-					tension: 15,
-					friction: 5,
-					useNativeDriver: true,
-				}),
-			]).start();
-
-			// Wait a bit then start the main sequence
-			setTimeout(() => {
-				// Phase 2: Text animation
-				Animated.timing(textAnim, {
-					toValue: 1,
-					duration: 800,
-					easing: Easing.out(Easing.elastic(1)),
-					useNativeDriver: true,
-				}).start();
-
-				// Phase 3: Progress bar animation (forced 3-second watch)
-				setTimeout(() => {
-					Animated.timing(progressAnim, {
-						toValue: 1,
-						duration: 3000, // 3 seconds of forced watching
-						easing: Easing.linear,
-						useNativeDriver: false,
-					}).start(() => {
-						// Phase 4: Completion effects
-						setIsComplete(true);
-						setShowSkipButton(true);
-
-						// Particle effects
-						Animated.stagger(200, [
-							Animated.spring(particleAnim1, {
-								toValue: 1,
-								tension: 20,
-								friction: 7,
-								useNativeDriver: true,
-							}),
-							Animated.spring(particleAnim2, {
-								toValue: 1,
-								tension: 20,
-								friction: 7,
-								useNativeDriver: true,
-							}),
-							Animated.spring(particleAnim3, {
-								toValue: 1,
-								tension: 20,
-								friction: 7,
-								useNativeDriver: true,
-							}),
-						]).start();
-
-						// No auto-advance - user must tap the button
-					});
-				}, 500);
-			}, 800);
-		};
-
-		startAnimeLoading();
-	}, []);
-
-	const progressWidth = progressAnim.interpolate({
-		inputRange: [0, 1],
-		outputRange: ['0%', '100%'],
-	});
-
-	const particleStyle = (anim) => ({
-		opacity: anim,
-		transform: [
-			{
-				scale: anim.interpolate({
-					inputRange: [0, 1],
-					outputRange: [0, 1.5],
-				}),
-			},
-			{
-				translateY: anim.interpolate({
-					inputRange: [0, 1],
-					outputRange: [0, -50],
-				}),
-			},
-		],
-	});
-
-	return (
-		<View style={loadingStyles.loadingContainer}>
-			{/* Background particles */}
-			<View style={styles.particlesContainer}>
-				<Animated.Text style={[styles.particle, styles.particle1, particleStyle(particleAnim1)]}>
-					✨
-				</Animated.Text>
-				<Animated.Text style={[styles.particle, styles.particle2, particleStyle(particleAnim2)]}>
-					⭐
-				</Animated.Text>
-				<Animated.Text style={[styles.particle, styles.particle3, particleStyle(particleAnim3)]}>
-					🌟
-				</Animated.Text>
-			</View>
-
-			<Animated.View
-				style={[
-					styles.loadingContent,
-					{
-						opacity: fadeAnim,
-						transform: [{ scale: scaleAnim }],
-					},
-				]}
-			>
-				{/* Anime-style logo */}
-				<View style={styles.animeLogoContainer}>
-					<View style={styles.animeLogo}>
-						<Text style={styles.animeLogoText}>🎓</Text>
-						<View style={styles.animeGlow} />
-					</View>
-				</View>
-
-				{/* Anime-style title with dramatic effect */}
-				<Animated.View
-					style={[
-						styles.animeTitleContainer,
-						{
-							opacity: textAnim,
-							transform: [
-								{
-									scale: textAnim.interpolate({
-										inputRange: [0, 0.5, 1],
-										outputRange: [0.8, 1.2, 1],
-									}),
-								},
-							],
-						},
-					]}
-				>
-					<Text style={loadingStyles.animeMainTitle}>{currentTexts.mainTitle}</Text>
-					<Text style={styles.animeSubTitle}>{currentTexts.subTitle}</Text>
-					<Text style={loadingStyles.animeTagline}>{currentTexts.tagline}</Text>
-				</Animated.View>
-
-				{/* Progress bar with anime styling */}
-				<View style={styles.progressContainer}>
-					<View style={loadingStyles.progressBarBackground}>
-						<Animated.View
-							style={[
-								styles.progressBarFill,
-								{ width: progressWidth },
-							]}
-						/>
-					</View>
-					<Text style={loadingStyles.progressText}>
-						{isComplete ? currentTexts.completeText : currentTexts.loadingText}
-					</Text>
-				</View>
-
-				{/* Skip button (only shows after completion) */}
-				{showSkipButton && (
-					<Animated.View
-						style={[
-							styles.skipButtonContainer,
-							{
-								opacity: Animated.add(particleAnim1, particleAnim2, particleAnim3).interpolate({
-									inputRange: [0, 3],
-									outputRange: [0, 1],
-								}),
-							},
-						]}
-					>
-						<TouchableOpacity onPress={onLoadingComplete} activeOpacity={0.8}>
-							<Text style={loadingStyles.skipButtonText}>{currentTexts.skipButton}</Text>
-						</TouchableOpacity>
-					</Animated.View>
-				)}
-			</Animated.View>
-		</View>
-	);
-}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -451,10 +174,24 @@ function MeScreenStack() {
 }
 
 function AppContent() {
+	// Keep SafeAreaProvider at this level, then use an inner component
+	// that reads the insets hook (so the hook is used below the provider).
+	return (
+		<SafeAreaProvider>
+			<AppContentInner />
+		</SafeAreaProvider>
+	);
+}
+
+function AppContentInner() {
+	const insets = useSafeAreaInsets();
 	const { theme } = useTheme();
 
+	const paddingTop = Platform.OS === 'android' ? insets.top : 0;
+	const paddingBottom = Platform.OS == 'android' ? insets.bottom : 0;
+
 	return (
-		<GestureHandlerRootView style={{ flex: 1 }}>
+		<GestureHandlerRootView style={{ flex: 1, paddingTop, paddingBottom, backgroundColor: theme.surface }}>
 			<BottomSheetModalProvider>
 				<NavigationContainer>
 					<Tab.Navigator
@@ -462,11 +199,17 @@ function AppContent() {
 							tabBarActiveTintColor: theme.primary,
 							tabBarInactiveTintColor: theme.textSecondary,
 							tabBarStyle: {
-								backgroundColor: theme.background,
+								// make tab bar background match header/padding
+								backgroundColor: theme.surface,
 								borderTopColor: theme.border,
 								borderTopWidth: 1,
-								paddingBottom: 5,
+								paddingBottom: 0,
 								height: 85,
+								elevation: 0, // Android
+								shadowColor: 'transparent', // iOS
+								shadowOpacity: 0,
+								shadowOffset: { height: 0 },
+								shadowRadius: 0,
 							},
 							tabBarLabelStyle: {
 								fontSize: 12,
@@ -535,26 +278,15 @@ function useInitUniversityNameTranslations(setLoading) {
 
 export default function App() {
 	const [isLoading, setIsLoading] = useState(true);
-	const [showAnimeLoading, setShowAnimeLoading] = useState(true);
 
 	useInitUniversityNameTranslations(setIsLoading);
-
-	const handleAnimeLoadingComplete = () => {
-		setShowAnimeLoading(false);
-	};
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>
 				<LanguageProvider>
 					<RankingsProvider>
-						{showAnimeLoading ? (
-							<LoadingScreen onLoadingComplete={handleAnimeLoadingComplete} />
-						) : isLoading ? (
-							<LoadingScreen onLoadingComplete={() => { }} />
-						) : (
-							<AppContent />
-						)}
+						<AppContent />
 					</RankingsProvider>
 				</LanguageProvider>
 			</ThemeProvider>

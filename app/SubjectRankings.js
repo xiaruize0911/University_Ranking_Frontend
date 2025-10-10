@@ -205,7 +205,7 @@ export default function SubjectRankingsPage() {
                                                 const displayName = getUniversityName(uni.normalized_name, currentLanguage);
                                                 return (
                                                     <TouchableOpacity
-                                                        key={uni.normalized_name || uniIdx}
+                                                        key={`${item.source}-${item.subject}-top-${uni.normalized_name || uniIdx}-${uniIdx}`}
                                                         onPress={() => handleUniversityPress(uni.normalized_name, displayName)}
                                                         activeOpacity={0.7}
                                                     >

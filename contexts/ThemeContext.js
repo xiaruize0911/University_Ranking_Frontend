@@ -15,7 +15,7 @@ export const useTheme = () => {
 };
 
 export const lightTheme = {
-    background: '#f8f9fa',
+    background: Platform.OS == 'android' ? '#ffffff' : '#f8f9fa',
     surface: '#ffffff',
     surfaceSecondary: '#f1f3f5',
     primary: '#4a90e2',
@@ -28,7 +28,7 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-    background: '#121212',
+    background: Platform.OS == 'android' ? '#121212' : '#121212',
     surface: '#1e1e1e',
     surfaceSecondary: '#434343ff',
     primary: '#4a90e2',

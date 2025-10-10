@@ -50,6 +50,7 @@
     "react-native": "0.79.5",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-elements": "^3.4.3",
+    "react-native-extra-dimensions-android": "^1.2.5",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",

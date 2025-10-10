@@ -232,16 +232,21 @@ export default function GetUniversityDetail(props) {
                 </Card>
             ) : null}
             { /* Stats block */}
-            {university.stats && university.stats.length > 0 && (
+            {university.stats && university.stats.length > 0 && university.stats.count != null && (
                 <Card style={[styles.sectionCard, { backgroundColor: theme.surface }]}>
                     <CardContent>
                         <CardTitle style={{ color: theme.text }}>{i18n.t('statistics')}</CardTitle>
                         <View style={styles.statsGrid}>
                             {university.stats.map((item, idx) => (
-                                <View style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]} key={item.key || idx}>
-                                    <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
-                                    <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || ''}</Text>
-                                </View>
+                                (item.count !== null && item.count !== undefined) ? (
+                                    <View
+                                        style={[styles.statsBlock, { backgroundColor: theme.surfaceSecondary, borderLeftColor: theme.primary }]}
+                                        key={item.key || idx}
+                                    >
+                                        <Text style={[styles.statsType, { color: theme.textSecondary }]}>{formatStatsType(item.type)}</Text>
+                                        <Text style={[styles.statsCount, { color: theme.primary }]}>{item.count || ''}</Text>
+                                    </View>
+                                ) : null
                             ))}
                         </View>
                     </CardContent>

@@ -1,6 +1,6 @@
 // export const API_BASE_URL = 'http://127.0.0.1:5000'; // or server IP
 // export const API_BASE_URL = 'https://university-ranking-backend.onrender.com/';
-export const API_BASE_URL = 'https://university-rankings-4psrx.ondigitalocean.app/'
+export const API_BASE_URL = 'https://university-rankings-4psrx.ondigitalocean.app'
 
 // Bing Translate API Configuration
 // To enable automatic translation of university descriptions when Chinese is selected:

@@ -8,9 +8,7 @@ import { StyleSheet } from 'react-native';
 // import SearchScreen from './app/Search.js';
 
 const Root = () => (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-        <App />
-    </GestureHandlerRootView>
+    <App />
 );
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

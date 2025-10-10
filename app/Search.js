@@ -460,13 +460,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 12,
-        height: 70
+        minHeight: 70
     },
     rankContainer: {
         marginRight: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        width: 70,
         minWidth: 70,
     },
     rankText: {
