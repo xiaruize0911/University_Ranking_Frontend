@@ -29,7 +29,8 @@ export default function SearchScreen() {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [rankingOptions, setRankingOptions] = useState([
         { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
-        { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' }
+        { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' },
+        { label: i18n.t('us_news_us_best_colleges'), value: 'US_News_US_best_colleges_Rankings' }
     ]);
 
     const countrySheetRef = useRef(null);
@@ -93,7 +94,8 @@ export default function SearchScreen() {
             // Start with default ranking options
             let searchRankingOptions = [
                 { label: i18n.t('qs_world_university_rankings'), value: 'QS_World_University_Rankings' },
-                { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' }
+                { label: i18n.t('us_news_best_global'), value: 'US_News_best global universities_Rankings' },
+                { label: i18n.t('us_news_us_best_colleges'), value: 'US_News_US_best_colleges_Rankings' }
             ];
 
             setRankingOptions(searchRankingOptions);
@@ -179,7 +181,7 @@ export default function SearchScreen() {
             >
                 <View style={styles.cardRow}>
                     <View style={styles.rankContainer}>
-                        <Text style={[styles.rankText, { color: theme.primary }]}>{i18n.t('rank_prefix')}{index + 1}</Text>
+                        <Text style={[styles.rankText, { color: theme.primary }]}>{i18n.t('rank_prefix')}{item.rank_value || (index + 1)}</Text>
                     </View>
                     <View style={styles.cardContent}>
                         <Text style={[styles.cardTitle, { color: theme.text }]}>{displayName}</Text>
