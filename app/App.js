@@ -188,10 +188,9 @@ function AppContentInner() {
 	const { theme } = useTheme();
 
 	const paddingTop = Platform.OS === 'android' ? insets.top : 0;
-	const paddingBottom = Platform.OS == 'android' ? insets.bottom : 0;
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1, paddingTop, paddingBottom, backgroundColor: theme.surface }}>
+		<GestureHandlerRootView style={{ flex: 1, paddingTop, backgroundColor: theme.surface }}>
 			<BottomSheetModalProvider>
 				<NavigationContainer>
 					<Tab.Navigator
@@ -203,8 +202,8 @@ function AppContentInner() {
 								backgroundColor: theme.surface,
 								borderTopColor: theme.border,
 								borderTopWidth: 1,
-								paddingBottom: 0,
-								height: 85,
+								paddingBottom: Platform.OS === 'ios' ? insets.bottom : 10,
+								height: Platform.OS === 'ios' ? (insets.bottom > 0 ? 60 + insets.bottom : 70) : 70,
 								elevation: 0, // Android
 								shadowColor: 'transparent', // iOS
 								shadowOpacity: 0,
